@@ -26,7 +26,9 @@ coverage/
 .env
 .env.local
 
-.claude
+.claude/memory/MEMORY.md
 
 # VS Code Extension Dev Host user data
 .vscode/dev-user-data/
+
+*.local.json
