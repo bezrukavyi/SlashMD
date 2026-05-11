@@ -20,21 +20,6 @@
   --markeasy-token-variable: #4ec9b0;
   --markeasy-token-function: #dcdcaa;
 
-  /* Markeasy Theme Variables - Typography */
-  --markeasy-heading-color: inherit;
-  --markeasy-h1-color: inherit;
-  --markeasy-h2-color: inherit;
-  --markeasy-h3-color: inherit;
-  --markeasy-h4-color: inherit;
-  --markeasy-h5-color: inherit;
-  --markeasy-h1-indent: 0;
-  --markeasy-h2-indent: 0;
-  --markeasy-h3-indent: 0;
-  --markeasy-h4-indent: 0;
-  --markeasy-h5-indent: 0;
-  --markeasy-bold-color: inherit;
-  --markeasy-italic-color: inherit;
-
   /* Markeasy Theme Variables - Callouts */
   --markeasy-callout-note-bg: rgba(0, 102, 204, 0.1);
   --markeasy-callout-note-border: #0066cc;
@@ -147,8 +132,6 @@ body {
   font-weight: 700;
   margin: 24px 0 16px 0;
   line-height: 1.2;
-  color: var(--markeasy-h1-color);
-  margin-left: var(--markeasy-h1-indent);
 }
 
 .editor-heading-h2 {
@@ -156,8 +139,6 @@ body {
   font-weight: 600;
   margin: 20px 0 12px 0;
   line-height: 1.3;
-  color: var(--markeasy-h2-color);
-  margin-left: var(--markeasy-h2-indent);
 }
 
 .editor-heading-h3 {
@@ -165,8 +146,6 @@ body {
   font-weight: 600;
   margin: 16px 0 8px 0;
   line-height: 1.4;
-  color: var(--markeasy-h3-color);
-  margin-left: var(--markeasy-h3-indent);
 }
 
 .editor-heading-h4 {
@@ -174,8 +153,6 @@ body {
   font-weight: 600;
   margin: 14px 0 6px 0;
   line-height: 1.4;
-  color: var(--markeasy-h4-color);
-  margin-left: var(--markeasy-h4-indent);
 }
 
 .editor-heading-h5 {
@@ -183,8 +160,6 @@ body {
   font-weight: 600;
   margin: 12px 0 4px 0;
   line-height: 1.4;
-  color: var(--markeasy-h5-color);
-  margin-left: var(--markeasy-h5-indent);
 }
 
 /* Lists */
@@ -390,12 +365,10 @@ body {
 /* Inline text formatting */
 .editor-text-bold {
   font-weight: 700;
-  color: var(--markeasy-bold-color);
 }
 
 .editor-text-italic {
   font-style: italic;
-  color: var(--markeasy-italic-color);
 }
 
 .editor-text-strikethrough {
