@@ -8,9 +8,7 @@
       "problemMatcher": [],
       "isBackground": true,
       "label": "npm: dev",
-      "runOptions": {
-        "runOn": "folderOpen"
-      }
+      "runOptions": {}
     },
     {
       "type": "npm",
