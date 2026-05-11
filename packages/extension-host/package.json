@@ -1,9 +1,8 @@
 {
-  "name": "slashmd",
-  "icon": "media/icon.png",
-  "displayName": "SlashMD — Block-Based Markdown",
+  "name": "markeasy",
+  "displayName": "Markeasy",
   "description": "A Notion-like block-based WYSIWYG editor for Markdown files",
-  "publisher": "slashmd",
+  "publisher": "markeasy",
   "galleryBanner": {
     "color": "#161617",
     "theme": "dark"
@@ -26,20 +25,20 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/wolfdavo/SlashMD"
+    "url": "https://github.com/bezrukavyi/markeasy"
   },
   "bugs": {
-    "url": "https://github.com/wolfdavo/SlashMD/issues"
+    "url": "https://github.com/bezrukavyi/markeasy/issues"
   },
-  "homepage": "https://slashmd.dev",
+  "homepage": "https://markeasy.dev",
   "license": "MIT",
   "main": "./dist/extension.js",
   "activationEvents": [],
   "contributes": {
     "customEditors": [
       {
-        "viewType": "slashmd.editor",
-        "displayName": "SlashMD — Block-Based Markdown",
+        "viewType": "markeasy.editor",
+        "displayName": "Markeasy",
         "selector": [
           {
             "filenamePattern": "*.md"
@@ -53,71 +52,71 @@
     ],
     "commands": [
       {
-        "command": "slashmd.openAsText",
+        "command": "markeasy.openAsText",
         "title": "Open as Raw Markdown",
-        "category": "SlashMD",
+        "category": "Markeasy",
         "icon": {
           "light": "media/code-light.svg",
           "dark": "media/code-dark.svg"
         }
       },
       {
-        "command": "slashmd.openAsSlashMD",
-        "title": "Open as SlashMD",
-        "category": "SlashMD",
+        "command": "markeasy.openAsMarkeasy",
+        "title": "Open as Markeasy",
+        "category": "Markeasy",
         "icon": {
           "light": "media/blocks-light.svg",
           "dark": "media/blocks-dark.svg"
         }
       },
       {
-        "command": "slashmd.copyContent",
+        "command": "markeasy.copyContent",
         "title": "Copy Markdown Content",
-        "category": "SlashMD",
+        "category": "Markeasy",
         "icon": {
           "light": "media/copy-light.svg",
           "dark": "media/copy-dark.svg"
         }
       },
       {
-        "command": "slashmd.insertBlock",
+        "command": "markeasy.insertBlock",
         "title": "Insert Block…",
-        "category": "SlashMD"
+        "category": "Markeasy"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "slashmd.copyContent",
-          "when": "activeCustomEditorId == slashmd.editor",
+          "command": "markeasy.copyContent",
+          "when": "activeCustomEditorId == markeasy.editor",
           "group": "navigation"
         },
         {
-          "command": "slashmd.openAsText",
-          "when": "activeCustomEditorId == slashmd.editor",
+          "command": "markeasy.openAsText",
+          "when": "activeCustomEditorId == markeasy.editor",
           "group": "navigation"
         },
         {
-          "command": "slashmd.copyContent",
-          "when": "resourceLangId == markdown && activeCustomEditorId != slashmd.editor",
+          "command": "markeasy.copyContent",
+          "when": "resourceLangId == markdown && activeCustomEditorId != markeasy.editor",
           "group": "navigation"
         },
         {
-          "command": "slashmd.openAsSlashMD",
-          "when": "resourceLangId == markdown && activeCustomEditorId != slashmd.editor",
+          "command": "markeasy.openAsMarkeasy",
+          "when": "resourceLangId == markdown && activeCustomEditorId != markeasy.editor",
           "group": "navigation"
         }
       ]
     },
     "configuration": {
-      "title": "SlashMD",
+      "title": "Markeasy",
       "properties": {
-        "slashmd.assets.folder": {
+        "markeasy.assets.folder": {
           "type": "string",
           "default": "assets",
           "description": "Relative folder for pasted/dragged images."
         },
-        "slashmd.assets.imagePathResolution": {
+        "markeasy.assets.imagePathResolution": {
           "type": "string",
           "enum": [
             "document",
@@ -130,12 +129,12 @@
             "Resolve paths relative to the workspace root"
           ]
         },
-        "slashmd.format.wrap": {
+        "markeasy.format.wrap": {
           "type": "integer",
           "default": 0,
           "description": "Markdown wrap width (0 = no wrap)."
         },
-        "slashmd.callouts.style": {
+        "markeasy.callouts.style": {
           "type": "string",
           "enum": [
             "admonition",
@@ -144,7 +143,7 @@
           "default": "admonition",
           "description": "Style for callout blocks."
         },
-        "slashmd.toggles.syntax": {
+        "markeasy.toggles.syntax": {
           "type": "string",
           "enum": [
             "details",
@@ -153,17 +152,17 @@
           "default": "details",
           "description": "Syntax for toggle blocks."
         },
-        "slashmd.math.enabled": {
+        "markeasy.math.enabled": {
           "type": "boolean",
           "default": false,
           "description": "Enable math block support."
         },
-        "slashmd.mermaid.enabled": {
+        "markeasy.mermaid.enabled": {
           "type": "boolean",
           "default": false,
           "description": "Enable Mermaid diagram support."
         },
-        "slashmd.theme.codeTheme": {
+        "markeasy.theme.codeTheme": {
           "type": "string",
           "enum": [
             "auto",
@@ -184,70 +183,77 @@
             "Monokai theme"
           ]
         },
-        "slashmd.theme.headingColor": {
+        "markeasy.theme.headingColor": {
           "type": "string",
           "default": "",
           "description": "Custom color for all headings. Can be overridden per level with h1Color through h5Color."
         },
-        "slashmd.theme.h1Color": {
+        "markeasy.theme.h1Color": {
           "type": "string",
           "default": "",
           "description": "Custom color for H1 headings. Overrides headingColor for H1."
         },
-        "slashmd.theme.h2Color": {
+        "markeasy.theme.h2Color": {
           "type": "string",
           "default": "",
           "description": "Custom color for H2 headings. Overrides headingColor for H2."
         },
-        "slashmd.theme.h3Color": {
+        "markeasy.theme.h3Color": {
           "type": "string",
           "default": "",
           "description": "Custom color for H3 headings. Overrides headingColor for H3."
         },
-        "slashmd.theme.h4Color": {
+        "markeasy.theme.h4Color": {
           "type": "string",
           "default": "",
           "description": "Custom color for H4 headings. Overrides headingColor for H4."
         },
-        "slashmd.theme.h5Color": {
+        "markeasy.theme.h5Color": {
           "type": "string",
           "default": "",
           "description": "Custom color for H5 headings. Overrides headingColor for H5."
         },
-        "slashmd.theme.h1Indent": {
+        "markeasy.theme.h1Indent": {
           "type": "string",
           "default": "",
           "description": "Left indent for H1 headings (e.g., '16px' or '1em')."
         },
-        "slashmd.theme.h2Indent": {
+        "markeasy.theme.h2Indent": {
           "type": "string",
           "default": "",
           "description": "Left indent for H2 headings (e.g., '16px' or '1em')."
         },
-        "slashmd.theme.h3Indent": {
+        "markeasy.theme.h3Indent": {
           "type": "string",
           "default": "",
           "description": "Left indent for H3 headings (e.g., '32px' or '2em')."
         },
-        "slashmd.theme.h4Indent": {
+        "markeasy.theme.h4Indent": {
           "type": "string",
           "default": "",
           "description": "Left indent for H4 headings (e.g., '48px' or '3em')."
         },
-        "slashmd.theme.h5Indent": {
+        "markeasy.theme.h5Indent": {
           "type": "string",
           "default": "",
           "description": "Left indent for H5 headings (e.g., '64px' or '4em')."
         },
-        "slashmd.theme.boldColor": {
+        "markeasy.theme.boldColor": {
           "type": "string",
           "default": "",
           "description": "Custom color for bold text (e.g., '#d19a66' or 'orange'). Leave empty to use default."
         },
-        "slashmd.theme.italicColor": {
+        "markeasy.theme.italicColor": {
           "type": "string",
           "default": "",
           "description": "Custom color for italic text (e.g., '#98c379' or 'green'). Leave empty to use default."
+        },
+        "markeasy.theme.fontScale": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0.5,
+          "maximum": 3,
+          "description": "Font size scale multiplier relative to VS Code's editor font size (e.g., 1.2 = 20% larger, 0.9 = 10% smaller)."
         }
       }
     }
@@ -256,8 +262,8 @@
     "build": "tsup src/extension.ts --format cjs --dts --outDir dist --external vscode",
     "dev": "tsup src/extension.ts --format cjs --watch --outDir dist --external vscode",
     "lint": "eslint src",
-    "package": "rm -rf .vsce-pkg && mkdir -p .vsce-pkg && cp -r package.json LICENSE README.md dist media .vsce-pkg/ && rm -f .vsce-pkg/dist/*.map && cd .vsce-pkg && vsce package --no-dependencies -o ../slashmd.vsix && cd .. && rm -rf .vsce-pkg",
-    "publish": "npm run package && vsce publish --packagePath slashmd.vsix",
+    "package": "rm -rf .vsce-pkg && mkdir -p .vsce-pkg && cp -r package.json README.md dist media .vsce-pkg/ && cp ../../LICENSE .vsce-pkg/ && rm -f .vsce-pkg/dist/*.map && cd .vsce-pkg && vsce package --no-dependencies -o ../markeasy.vsix && cd .. && rm -rf .vsce-pkg",
+    "publish": "npm run package && vsce publish --packagePath markeasy.vsix",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

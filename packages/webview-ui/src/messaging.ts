@@ -16,7 +16,7 @@ export function postMessage(message: UIToHostMessage): void {
 }
 
 export function requestInit(): void {
-  console.log('SlashMD: Requesting init from host');
+  console.log('Markeasy: Requesting init from host');
   postMessage({ type: 'REQUEST_INIT' });
 }
 
@@ -35,6 +35,10 @@ export function writeAsset(dataUri: string, suggestedName?: string): void {
   postMessage({ type: 'WRITE_ASSET', dataUri, suggestedName });
 }
 
+export function openUrl(url: string): void {
+  postMessage({ type: 'OPEN_URL', url });
+}
+
 // Listen for messages from extension host
 export type MessageHandler = (message: HostToUIMessage) => void;
 
@@ -45,7 +49,7 @@ export function addMessageHandler(handler: MessageHandler): () => void {
   // SECURITY: Guard against unbounded growth - throw error instead of silently clearing
   // This indicates a bug (likely missing cleanup) that should be fixed
   if (messageHandlers.size >= MAX_HANDLERS) {
-    console.error('SlashMD: Max message handlers reached. This indicates a memory leak - handlers are not being cleaned up properly.');
+    console.error('Markeasy: Max message handlers reached. This indicates a memory leak - handlers are not being cleaned up properly.');
     throw new Error('Max message handlers reached. Ensure handlers are properly cleaned up when components unmount.');
   }
   messageHandlers.add(handler);
@@ -56,14 +60,14 @@ export function addMessageHandler(handler: MessageHandler): () => void {
 
 // Initialize message listener with runtime validation
 function initMessageListener(): void {
-  console.log('SlashMD: Setting up message listener');
+  console.log('Markeasy: Setting up message listener');
   window.addEventListener('message', (event) => {
-    console.log('SlashMD: Received message from host:', event.data);
+    console.log('Markeasy: Received message from host:', event.data);
 
     // SECURITY: Runtime validation of incoming messages
     const message = validateHostToUIMessage(event.data);
     if (!message) {
-      console.warn('SlashMD: Ignoring invalid message from host');
+      console.warn('Markeasy: Ignoring invalid message from host');
       return;
     }
 
@@ -71,7 +75,7 @@ function initMessageListener(): void {
       try {
         handler(message);
       } catch (error) {
-        console.error('SlashMD: Error in message handler:', error);
+        console.error('Markeasy: Error in message handler:', error);
       }
     });
   });

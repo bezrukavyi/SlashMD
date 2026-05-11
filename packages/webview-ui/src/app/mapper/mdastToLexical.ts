@@ -317,7 +317,8 @@ function extractTextFromParagraph(node: Paragraph): string {
 }
 
 function convertList(node: List): ListNode {
-  const listType = node.ordered ? 'number' : 'bullet';
+  const isCheckList = !node.ordered && node.children.some(item => item.checked !== null && item.checked !== undefined);
+  const listType = node.ordered ? 'number' : isCheckList ? 'check' : 'bullet';
   const list = $createListNode(listType);
 
   for (const item of node.children) {

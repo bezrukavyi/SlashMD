@@ -1,5 +1,5 @@
 {
-  "name": "slashmd-monorepo",
+  "name": "markeasy",
   "private": true,
   "type": "module",
   "workspaces": [

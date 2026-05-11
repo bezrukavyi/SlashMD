@@ -1,7 +1,15 @@
 /* VS Code theme integration */
 :root {
-  --vscode-font-family: var(--vscode-editor-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  --vscode-font-family: var(
+    --vscode-editor-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   --vscode-font-size: var(--vscode-editor-font-size, 14px);
+  --markeasy-font-scale: 1;
   --vscode-foreground: var(--vscode-editor-foreground, #333);
   --vscode-background: var(--vscode-editor-background, #fff);
   --vscode-selection: var(--vscode-editor-selectionBackground, #add6ff);
@@ -9,42 +17,27 @@
   --vscode-link: var(--vscode-textLink-foreground, #0066cc);
   --vscode-code-bg: var(--vscode-textCodeBlock-background, #f5f5f5);
 
-  /* SlashMD Theme Variables - Syntax Highlighting */
-  --slashmd-token-comment: #6a9955;
-  --slashmd-token-punctuation: #d4d4d4;
-  --slashmd-token-property: #9cdcfe;
-  --slashmd-token-selector: #ce9178;
-  --slashmd-token-operator: #d4d4d4;
-  --slashmd-token-keyword: #569cd6;
-  --slashmd-token-variable: #4ec9b0;
-  --slashmd-token-function: #dcdcaa;
+  /* Markeasy Theme Variables - Syntax Highlighting */
+  --markeasy-token-comment: #6a9955;
+  --markeasy-token-punctuation: #d4d4d4;
+  --markeasy-token-property: #9cdcfe;
+  --markeasy-token-selector: #ce9178;
+  --markeasy-token-operator: #d4d4d4;
+  --markeasy-token-keyword: #569cd6;
+  --markeasy-token-variable: #4ec9b0;
+  --markeasy-token-function: #dcdcaa;
 
-  /* SlashMD Theme Variables - Typography */
-  --slashmd-heading-color: inherit;
-  --slashmd-h1-color: inherit;
-  --slashmd-h2-color: inherit;
-  --slashmd-h3-color: inherit;
-  --slashmd-h4-color: inherit;
-  --slashmd-h5-color: inherit;
-  --slashmd-h1-indent: 0;
-  --slashmd-h2-indent: 0;
-  --slashmd-h3-indent: 0;
-  --slashmd-h4-indent: 0;
-  --slashmd-h5-indent: 0;
-  --slashmd-bold-color: inherit;
-  --slashmd-italic-color: inherit;
-
-  /* SlashMD Theme Variables - Callouts */
-  --slashmd-callout-note-bg: rgba(0, 102, 204, 0.1);
-  --slashmd-callout-note-border: #0066cc;
-  --slashmd-callout-tip-bg: rgba(0, 153, 51, 0.1);
-  --slashmd-callout-tip-border: #009933;
-  --slashmd-callout-warning-bg: rgba(255, 153, 0, 0.1);
-  --slashmd-callout-warning-border: #ff9900;
-  --slashmd-callout-important-bg: rgba(153, 51, 255, 0.1);
-  --slashmd-callout-important-border: #9933ff;
-  --slashmd-callout-caution-bg: rgba(255, 51, 51, 0.1);
-  --slashmd-callout-caution-border: #ff3333;
+  /* Markeasy Theme Variables - Callouts */
+  --markeasy-callout-note-bg: rgba(0, 102, 204, 0.1);
+  --markeasy-callout-note-border: #0066cc;
+  --markeasy-callout-tip-bg: rgba(0, 153, 51, 0.1);
+  --markeasy-callout-tip-border: #009933;
+  --markeasy-callout-warning-bg: rgba(255, 153, 0, 0.1);
+  --markeasy-callout-warning-border: #ff9900;
+  --markeasy-callout-important-bg: rgba(153, 51, 255, 0.1);
+  --markeasy-callout-important-border: #9933ff;
+  --markeasy-callout-caution-bg: rgba(255, 51, 51, 0.1);
+  --markeasy-callout-caution-border: #ff3333;
 }
 
 * {
@@ -55,7 +48,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--vscode-font-family);
-  font-size: var(--vscode-font-size);
+  font-size: calc(var(--vscode-font-size) * var(--markeasy-font-scale));
   color: var(--vscode-foreground);
   background: var(--vscode-background);
   line-height: 1.6;
@@ -146,8 +139,6 @@ body {
   font-weight: 700;
   margin: 24px 0 16px 0;
   line-height: 1.2;
-  color: var(--slashmd-h1-color);
-  margin-left: var(--slashmd-h1-indent);
 }
 
 .editor-heading-h2 {
@@ -155,8 +146,6 @@ body {
   font-weight: 600;
   margin: 20px 0 12px 0;
   line-height: 1.3;
-  color: var(--slashmd-h2-color);
-  margin-left: var(--slashmd-h2-indent);
 }
 
 .editor-heading-h3 {
@@ -164,8 +153,6 @@ body {
   font-weight: 600;
   margin: 16px 0 8px 0;
   line-height: 1.4;
-  color: var(--slashmd-h3-color);
-  margin-left: var(--slashmd-h3-indent);
 }
 
 .editor-heading-h4 {
@@ -173,8 +160,6 @@ body {
   font-weight: 600;
   margin: 14px 0 6px 0;
   line-height: 1.4;
-  color: var(--slashmd-h4-color);
-  margin-left: var(--slashmd-h4-indent);
 }
 
 .editor-heading-h5 {
@@ -182,8 +167,6 @@ body {
   font-weight: 600;
   margin: 12px 0 4px 0;
   line-height: 1.4;
-  color: var(--slashmd-h5-color);
-  margin-left: var(--slashmd-h5-indent);
 }
 
 /* Lists */
@@ -205,9 +188,13 @@ body {
   padding-left: 24px;
 }
 
+.editor-listitem-checked {
+  text-decoration: line-through;
+}
+
 .editor-listitem-checked::before,
 .editor-listitem-unchecked::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 4px;
@@ -224,7 +211,7 @@ body {
 }
 
 .editor-listitem-checked::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   left: 3px;
   top: 2px;
@@ -253,7 +240,7 @@ body {
   padding: 12px 16px;
   background: var(--vscode-code-bg);
   border-radius: 4px;
-  font-family: 'Fira Code', 'Consolas', monospace;
+  font-family: "Fira Code", "Consolas", monospace;
   font-size: 0.9em;
   overflow-x: auto;
   white-space: pre;
@@ -279,7 +266,9 @@ body {
   border-radius: 4px;
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
 }
 
 .code-language-button:hover {
@@ -301,7 +290,10 @@ body {
   border-radius: 4px;
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    color 0.15s;
 }
 
 .code-copy-button:hover {
@@ -389,12 +381,10 @@ body {
 /* Inline text formatting */
 .editor-text-bold {
   font-weight: 700;
-  color: var(--slashmd-bold-color);
 }
 
 .editor-text-italic {
   font-style: italic;
-  color: var(--slashmd-italic-color);
 }
 
 .editor-text-strikethrough {
@@ -406,11 +396,20 @@ body {
 }
 
 .editor-text-code {
-  font-family: 'Fira Code', 'Consolas', monospace;
-  background: var(--vscode-code-bg);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.9em;
+  font-family: var(
+    --vscode-editor-font-family,
+    "Fira Code",
+    "Consolas",
+    monospace
+  );
+  background: var(--vscode-textCodeBlock-background, rgba(135, 131, 120, 0.15));
+  color: var(--vscode-textPreformat-foreground, inherit);
+  border: 1px solid
+    var(--vscode-textSeparator-foreground, rgba(135, 131, 120, 0.3));
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.875em;
+  white-space: nowrap;
 }
 
 /* Links */
@@ -455,7 +454,7 @@ body {
 }
 
 .divider-block::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
@@ -562,28 +561,28 @@ body {
 }
 
 .callout-note {
-  background: var(--slashmd-callout-note-bg);
-  border-left-color: var(--slashmd-callout-note-border);
+  background: var(--markeasy-callout-note-bg);
+  border-left-color: var(--markeasy-callout-note-border);
 }
 
 .callout-tip {
-  background: var(--slashmd-callout-tip-bg);
-  border-left-color: var(--slashmd-callout-tip-border);
+  background: var(--markeasy-callout-tip-bg);
+  border-left-color: var(--markeasy-callout-tip-border);
 }
 
 .callout-warning {
-  background: var(--slashmd-callout-warning-bg);
-  border-left-color: var(--slashmd-callout-warning-border);
+  background: var(--markeasy-callout-warning-bg);
+  border-left-color: var(--markeasy-callout-warning-border);
 }
 
 .callout-important {
-  background: var(--slashmd-callout-important-bg);
-  border-left-color: var(--slashmd-callout-important-border);
+  background: var(--markeasy-callout-important-bg);
+  border-left-color: var(--markeasy-callout-important-border);
 }
 
 .callout-caution {
-  background: var(--slashmd-callout-caution-bg);
-  border-left-color: var(--slashmd-callout-caution-border);
+  background: var(--markeasy-callout-caution-bg);
+  border-left-color: var(--markeasy-callout-caution-border);
 }
 
 /* Remove bottom margin from last paragraph in callout */
@@ -611,7 +610,7 @@ body {
 
 /* Toggle arrow - positioned absolutely */
 .toggle-title::before {
-  content: '▶';
+  content: "▶";
   position: absolute;
   left: 12px;
   top: 50%;
@@ -629,7 +628,7 @@ body {
 
 /* Make the arrow click area larger */
 .toggle-title::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -681,7 +680,7 @@ body {
 
 /* Empty content placeholder */
 .toggle-content-area:empty::before {
-  content: 'Type content here...';
+  content: "Type content here...";
   color: var(--vscode-foreground);
   opacity: 0.4;
 }
@@ -764,6 +763,61 @@ body {
 }
 
 .toolbar-link-input input:focus {
+  border-color: var(--vscode-focus-border, #007acc);
+}
+
+/* Link popup */
+.link-popup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: var(--vscode-editorWidget-background, #252526);
+  border: 1px solid var(--vscode-editorWidget-border, #454545);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+.link-popup-url {
+  color: var(--vscode-textLink-foreground, #4e94ce);
+  font-size: 12px;
+  text-decoration: none;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+}
+
+.link-popup-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.link-popup-button:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.15));
+  opacity: 1;
+}
+
+.link-popup-input {
+  background: var(--vscode-input-background, #3c3c3c);
+  border: 1px solid var(--vscode-input-border, #555);
+  color: var(--vscode-input-foreground, #cccccc);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+  min-width: 220px;
+  outline: none;
+}
+
+.link-popup-input:focus {
   border-color: var(--vscode-focus-border, #007acc);
 }
 
@@ -888,26 +942,21 @@ body {
   background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.1));
 }
 
-/* Block Delete Button */
-.block-delete-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 50;
-  padding: 4px 4px 4px 12px;
-  background: none;
-  border: none;
-}
-
-.editor-inner:hover .block-delete-button {
-  opacity: 0.4;
-}
-
-.block-delete-button:hover {
+.drag-handle.selected {
   opacity: 1;
+}
+
+.drag-handle.selected .drag-handle-icon {
+  background: var(--vscode-toolbar-activeBackground, rgba(128, 128, 128, 0.2));
+}
+
+.block-selected {
+  background: var(--vscode-editor-selectionBackground, rgba(38, 79, 120, 0.4));
+  border-radius: 4px;
+}
+
+.editor-inner:hover {
+  opacity: 0.4;
 }
 
 .block-delete-icon {
@@ -922,42 +971,37 @@ body {
   border-radius: 4px;
 }
 
-.block-delete-button:hover .block-delete-icon {
-  background: var(--vscode-inputValidation-errorBackground, rgba(255, 0, 0, 0.15));
-  color: var(--vscode-errorForeground, #f44336);
-}
-
 /* Code syntax highlighting */
 .editor-tokenComment {
-  color: var(--slashmd-token-comment);
+  color: var(--markeasy-token-comment);
 }
 
 .editor-tokenPunctuation {
-  color: var(--slashmd-token-punctuation);
+  color: var(--markeasy-token-punctuation);
 }
 
 .editor-tokenProperty {
-  color: var(--slashmd-token-property);
+  color: var(--markeasy-token-property);
 }
 
 .editor-tokenSelector {
-  color: var(--slashmd-token-selector);
+  color: var(--markeasy-token-selector);
 }
 
 .editor-tokenOperator {
-  color: var(--slashmd-token-operator);
+  color: var(--markeasy-token-operator);
 }
 
 .editor-tokenAttr {
-  color: var(--slashmd-token-keyword);
+  color: var(--markeasy-token-keyword);
 }
 
 .editor-tokenVariable {
-  color: var(--slashmd-token-variable);
+  color: var(--markeasy-token-variable);
 }
 
 .editor-tokenFunction {
-  color: var(--slashmd-token-function);
+  color: var(--markeasy-token-function);
 }
 
 /* Scrollbar */
@@ -982,7 +1026,7 @@ body {
 
 /* Focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid var(--vscode-link);
+  outline: none;
   outline-offset: 2px;
 }
 
@@ -1163,7 +1207,9 @@ body {
   font-size: 14px;
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
 }
 
 .image-modal-tab:hover {
@@ -1191,7 +1237,9 @@ body {
   border: 2px dashed var(--vscode-border);
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .image-modal-dropzone:hover {

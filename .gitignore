@@ -25,3 +25,8 @@ coverage/
 # Environment
 .env
 .env.local
+
+.claude
+
+# VS Code Extension Dev Host user data
+.vscode/dev-user-data/

@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { generateNonce, buildCsp } from './csp';
 import { getSettings, getThemeOverrides } from './types';
 import { AssetService } from './assetService';
 import { UIToHostMessageSchema } from './validation';
 
-export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
-  public static readonly viewType = 'slashmd.editor';
+export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
+  public static readonly viewType = 'markeasy.editor';
 
   private static readonly webviewOptions: vscode.WebviewOptions = {
     enableScripts: true,
@@ -15,9 +16,9 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
   constructor(private readonly context: vscode.ExtensionContext) {}
 
   public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new SlashMDEditorProvider(context);
+    const provider = new MarkeasyEditorProvider(context);
     const providerRegistration = vscode.window.registerCustomEditorProvider(
-      SlashMDEditorProvider.viewType,
+      MarkeasyEditorProvider.viewType,
       provider,
       {
         webviewOptions: {
@@ -34,7 +35,7 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel: vscode.WebviewPanel,
     _token: vscode.CancellationToken
   ): Promise<void> {
-    console.log('SlashMD: resolveCustomTextEditor called for', document.uri.toString());
+    console.log('Markeasy: resolveCustomTextEditor called for', document.uri.toString());
 
     // Get workspace folder for asset service
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
@@ -50,13 +51,13 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
       localResourceRoots.push(workspaceFolder.uri);
     }
     webviewPanel.webview.options = {
-      ...SlashMDEditorProvider.webviewOptions,
+      ...MarkeasyEditorProvider.webviewOptions,
       localResourceRoots,
     };
 
     // Set initial HTML
     const html = this.getHtmlForWebview(webviewPanel.webview);
-    console.log('SlashMD: Setting webview HTML, length:', html.length);
+    console.log('Markeasy: Setting webview HTML, length:', html.length);
     webviewPanel.webview.html = html;
 
     // Track if we're currently applying edits from the webview
@@ -65,7 +66,7 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
     // Send document content to webview
     const sendDocumentToWebview = () => {
       const text = document.getText();
-      console.log('SlashMD: Sending DOC_INIT to webview, text length:', text.length);
+      console.log('Markeasy: Sending DOC_INIT to webview, text length:', text.length);
 
       // Generate base URI for resolving relative asset paths (workspace root)
       let assetBaseUri: string | undefined;
@@ -103,12 +104,12 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
         // Runtime validation of incoming message
         const parseResult = UIToHostMessageSchema.safeParse(rawMessage);
         if (!parseResult.success) {
-          console.error('SlashMD: Invalid message from webview:', parseResult.error.message);
+          console.error('Markeasy: Invalid message from webview:', parseResult.error.message);
           return;
         }
 
         const message = parseResult.data;
-        console.log('SlashMD: Received validated message from webview:', message.type);
+        console.log('Markeasy: Received validated message from webview:', message.type);
 
         switch (message.type) {
           case 'REQUEST_INIT':
@@ -133,7 +134,7 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
               for (const textEdit of message.edits) {
                 // Additional validation: ensure end >= start
                 if (textEdit.end < textEdit.start) {
-                  console.error('SlashMD: Invalid edit range: end < start');
+                  console.error('Markeasy: Invalid edit range: end < start');
                   continue;
                 }
                 const startPos = document.positionAt(textEdit.start);
@@ -145,6 +146,10 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
               await vscode.workspace.applyEdit(edit);
               isApplyingEdits = false;
             }
+            break;
+
+          case 'OPEN_URL':
+            vscode.env.openExternal(vscode.Uri.parse(message.url));
             break;
 
           case 'WRITE_ASSET':
@@ -201,7 +206,7 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Handle settings changes
     const configChangeSubscription = vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('slashmd')) {
+      if (e.affectsConfiguration('markeasy')) {
         const newSettings = getSettings();
         webviewPanel.webview.postMessage({
           type: 'SETTINGS_CHANGED',
@@ -224,12 +229,23 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
       }
     });
 
+    // Hot reload in development: watch the webview bundle and reload on change
+    let devFsWatcher: fs.FSWatcher | undefined;
+    if (this.context.extensionMode === vscode.ExtensionMode.Development) {
+      const bundlePath = vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview.js').fsPath;
+      devFsWatcher = fs.watch(bundlePath, () => {
+        webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
+        setTimeout(() => sendDocumentToWebview(), 100);
+      });
+    }
+
     // Cleanup on panel dispose
     webviewPanel.onDidDispose(() => {
       messageHandler.dispose();
       changeDocumentSubscription.dispose();
       configChangeSubscription.dispose();
       themeChangeSubscription.dispose();
+      devFsWatcher?.close();
     });
 
     // Send initial content after a short delay to ensure webview is ready
@@ -250,10 +266,10 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
       vscode.Uri.joinPath(this.context.extensionUri, 'dist', 'webview.css')
     );
 
-    console.log('SlashMD: Extension URI:', this.context.extensionUri.toString());
-    console.log('SlashMD: Script URI:', scriptUri.toString());
-    console.log('SlashMD: Style URI:', styleUri.toString());
-    console.log('SlashMD: CSP:', csp);
+    console.log('Markeasy: Extension URI:', this.context.extensionUri.toString());
+    console.log('Markeasy: Script URI:', scriptUri.toString());
+    console.log('Markeasy: Style URI:', styleUri.toString());
+    console.log('Markeasy: CSP:', csp);
 
     // SECURITY: Use safe DOM APIs for error display instead of innerHTML
     // The error handler uses textContent to prevent XSS
@@ -264,16 +280,16 @@ export class SlashMDEditorProvider implements vscode.CustomTextEditorProvider {
   <meta http-equiv="Content-Security-Policy" content="${csp}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="${styleUri}" rel="stylesheet">
-  <title>SlashMD</title>
+  <title>Markeasy</title>
 </head>
 <body>
   <div id="root">
-    <div style="padding: 20px; color: #888;">Loading SlashMD editor...</div>
+    <div style="padding: 20px; color: #888;">Loading Markeasy editor...</div>
   </div>
   <script nonce="${nonce}">
-    console.log('SlashMD inline script running');
+    console.log('Markeasy inline script running');
     window.onerror = function(msg, url, line, col, error) {
-      console.error('SlashMD error:', msg, url, line, col, error);
+      console.error('Markeasy error:', msg, url, line, col, error);
       var root = document.getElementById('root');
       var errorDiv = document.createElement('div');
       errorDiv.style.cssText = 'color: red; padding: 20px;';

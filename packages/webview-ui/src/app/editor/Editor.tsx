@@ -18,17 +18,20 @@ import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { TableNode, TableRowNode, TableCellNode } from '@lexical/table';
 import { EditorState, LexicalEditor } from 'lexical';
 
-import { Toolbar } from './Toolbar';
-import { SlashMenuPlugin } from './SlashMenuPlugin';
-import { DragHandlePlugin } from './DragHandlePlugin';
-import { MarkdownShortcutsPlugin } from './MarkdownShortcutsPlugin';
-import { TableActionsPlugin } from './TableActionsPlugin';
-import { CodeBlockPlugin } from './CodeBlockPlugin';
-import { TogglePlugin } from './TogglePlugin';
-import { ImagePlugin } from './ImagePlugin';
-import { BlockClickPlugin } from './BlockClickPlugin';
-import { SearchPlugin } from './SearchPlugin';
-import { AssetContext, createAssetContextValue } from './AssetContext';
+import { Toolbar } from './components/Toolbar';
+import { SlashMenuPlugin } from './plugins/SlashMenuPlugin';
+import { DragHandlePlugin } from './plugins/DragHandlePlugin';
+import { MarkdownShortcutsPlugin } from './plugins/MarkdownShortcutsPlugin';
+import { TableActionsPlugin } from './plugins/TableActionsPlugin';
+import { CodeBlockPlugin } from './plugins/CodeBlockPlugin';
+import { CodeFencePlugin } from './plugins/CodeFencePlugin';
+import { TogglePlugin } from './plugins/TogglePlugin';
+import { ImagePlugin } from './plugins/ImagePlugin';
+import { BlockClickPlugin } from './plugins/BlockClickPlugin';
+import { SearchPlugin } from './plugins/SearchPlugin';
+import { PasteLinkPlugin } from './plugins/PasteLinkPlugin';
+import { BacktickWrapPlugin } from './plugins/BacktickWrapPlugin';
+import { AssetContext, createAssetContextValue } from './context/AssetContext';
 import {
   CalloutNode,
   ToggleContainerNode,
@@ -142,7 +145,6 @@ const editorNodes = [
   HorizontalRuleNode,
 ];
 
-// Plugin to enable syntax highlighting in code blocks
 function CodeHighlightPlugin() {
   const [editor] = useLexicalComposerContext();
 
@@ -153,7 +155,6 @@ function CodeHighlightPlugin() {
   return null;
 }
 
-// Plugin to initialize editor with markdown content
 function InitializePlugin({ content }: { content: string }) {
   const [editor] = useLexicalComposerContext();
   const hasInitialized = useRef(false);
@@ -171,7 +172,6 @@ function InitializePlugin({ content }: { content: string }) {
   return null;
 }
 
-// Plugin to auto-focus the editor when it mounts
 function AutoFocusPlugin() {
   const [editor] = useLexicalComposerContext();
   const hasFocused = useRef(false);
@@ -195,7 +195,6 @@ function AutoFocusPlugin() {
   return null;
 }
 
-// Simple hash function for content comparison
 function simpleHash(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -206,7 +205,6 @@ function simpleHash(str: string): number {
   return hash;
 }
 
-// Plugin to handle content updates from extension host
 function ExternalUpdatePlugin({
   content,
   lastInternalUpdate,
@@ -238,7 +236,6 @@ function ExternalUpdatePlugin({
   return null;
 }
 
-// Debounce delay in ms - balances responsiveness with performance
 const DEBOUNCE_DELAY = 100;
 
 export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri, imagePathResolution }: EditorProps) {
@@ -292,7 +289,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
   );
 
   const initialConfig = {
-    namespace: 'SlashMD',
+    namespace: 'Markeasy',
     theme: editorTheme,
     nodes: editorNodes,
     onError: editorOnError,
@@ -333,8 +330,11 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
             <MarkdownShortcutsPlugin />
             <TableActionsPlugin />
             <CodeBlockPlugin />
+            <CodeFencePlugin />
             <TogglePlugin />
             <ImagePlugin />
+            <PasteLinkPlugin />
+            <BacktickWrapPlugin />
             <BlockClickPlugin />
             <Toolbar />
             <SearchPlugin />

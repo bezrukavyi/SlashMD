@@ -32,7 +32,7 @@ export const ImagePathResolutionSchema = z.enum(['document', 'workspace']);
 // Theme overrides - CSS variable values
 export const ThemeOverridesSchema = z.record(z.string(), z.string());
 
-export const SlashMDSettingsSchema = z.object({
+export const MarkeasySettingsSchema = z.object({
   assetsFolder: z.string().max(256),
   imagePathResolution: ImagePathResolutionSchema,
   formatWrap: z.number().int().min(0).max(1000),
@@ -41,26 +41,14 @@ export const SlashMDSettingsSchema = z.object({
   mathEnabled: z.boolean(),
   mermaidEnabled: z.boolean(),
   codeTheme: CodeThemeSchema,
-  headingColor: z.string().max(64),
-  h1Color: z.string().max(64),
-  h2Color: z.string().max(64),
-  h3Color: z.string().max(64),
-  h4Color: z.string().max(64),
-  h5Color: z.string().max(64),
-  h1Indent: z.string().max(64),
-  h2Indent: z.string().max(64),
-  h3Indent: z.string().max(64),
-  h4Indent: z.string().max(64),
-  h5Indent: z.string().max(64),
-  boldColor: z.string().max(64),
-  italicColor: z.string().max(64),
+  fontScale: z.number().min(0.5).max(3),
 });
 
 // Host → UI message schemas
 export const DocInitMessageSchema = z.object({
   type: z.literal('DOC_INIT'),
   text: z.string(),
-  settings: SlashMDSettingsSchema,
+  settings: MarkeasySettingsSchema,
   assetBaseUri: z.string().optional(),
   documentDirUri: z.string().optional(),
   themeOverrides: ThemeOverridesSchema.optional(),
@@ -83,7 +71,7 @@ export const AssetWrittenMessageSchema = z.object({
 
 export const SettingsChangedMessageSchema = z.object({
   type: z.literal('SETTINGS_CHANGED'),
-  settings: SlashMDSettingsSchema,
+  settings: MarkeasySettingsSchema,
   themeOverrides: ThemeOverridesSchema.optional(),
 });
 
@@ -108,7 +96,7 @@ export type TextEdit = z.infer<typeof TextEditSchema>;
 export type CodeTheme = z.infer<typeof CodeThemeSchema>;
 export type ImagePathResolution = z.infer<typeof ImagePathResolutionSchema>;
 export type ThemeOverrides = z.infer<typeof ThemeOverridesSchema>;
-export type SlashMDSettings = z.infer<typeof SlashMDSettingsSchema>;
+export type MarkeasySettings = z.infer<typeof MarkeasySettingsSchema>;
 export type HostToUIMessage = z.infer<typeof HostToUIMessageSchema>;
 
 // UI → Host messages (outgoing, don't need validation)
@@ -125,7 +113,7 @@ export type UIToHostMessage =
 export function validateHostToUIMessage(data: unknown): HostToUIMessage | null {
   const result = HostToUIMessageSchema.safeParse(data);
   if (!result.success) {
-    console.error('SlashMD: Invalid Host→UI message:', result.error.message);
+    console.error('Markeasy: Invalid Host→UI message:', result.error.message);
     return null;
   }
   return result.data;

@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 export type CodeTheme = 'auto' | 'dark' | 'light' | 'github-dark' | 'github-light' | 'monokai';
 export type ImagePathResolution = 'document' | 'workspace';
 
-export interface SlashMDSettings {
+export interface MarkeasySettings {
   assetsFolder: string;
   imagePathResolution: ImagePathResolution;
   formatWrap: number;
@@ -25,6 +25,7 @@ export interface SlashMDSettings {
   h5Indent: string;
   boldColor: string;
   italicColor: string;
+  fontScale: number;
 }
 
 export type ThemeOverrides = Record<string, string>;
@@ -32,59 +33,59 @@ export type ThemeOverrides = Record<string, string>;
 // Theme color presets for syntax highlighting
 const THEME_PRESETS: Record<string, ThemeOverrides> = {
   dark: {
-    '--slashmd-token-comment': '#6a9955',
-    '--slashmd-token-punctuation': '#d4d4d4',
-    '--slashmd-token-property': '#9cdcfe',
-    '--slashmd-token-selector': '#ce9178',
-    '--slashmd-token-operator': '#d4d4d4',
-    '--slashmd-token-keyword': '#569cd6',
-    '--slashmd-token-variable': '#4ec9b0',
-    '--slashmd-token-function': '#dcdcaa',
+    '--markeasy-token-comment': '#6a9955',
+    '--markeasy-token-punctuation': '#d4d4d4',
+    '--markeasy-token-property': '#9cdcfe',
+    '--markeasy-token-selector': '#ce9178',
+    '--markeasy-token-operator': '#d4d4d4',
+    '--markeasy-token-keyword': '#569cd6',
+    '--markeasy-token-variable': '#4ec9b0',
+    '--markeasy-token-function': '#dcdcaa',
   },
   light: {
-    '--slashmd-token-comment': '#008000',
-    '--slashmd-token-punctuation': '#000000',
-    '--slashmd-token-property': '#001080',
-    '--slashmd-token-selector': '#a31515',
-    '--slashmd-token-operator': '#000000',
-    '--slashmd-token-keyword': '#0000ff',
-    '--slashmd-token-variable': '#267f99',
-    '--slashmd-token-function': '#795e26',
+    '--markeasy-token-comment': '#008000',
+    '--markeasy-token-punctuation': '#000000',
+    '--markeasy-token-property': '#001080',
+    '--markeasy-token-selector': '#a31515',
+    '--markeasy-token-operator': '#000000',
+    '--markeasy-token-keyword': '#0000ff',
+    '--markeasy-token-variable': '#267f99',
+    '--markeasy-token-function': '#795e26',
   },
   'github-dark': {
-    '--slashmd-token-comment': '#8b949e',
-    '--slashmd-token-punctuation': '#c9d1d9',
-    '--slashmd-token-property': '#79c0ff',
-    '--slashmd-token-selector': '#a5d6ff',
-    '--slashmd-token-operator': '#c9d1d9',
-    '--slashmd-token-keyword': '#ff7b72',
-    '--slashmd-token-variable': '#7ee787',
-    '--slashmd-token-function': '#d2a8ff',
+    '--markeasy-token-comment': '#8b949e',
+    '--markeasy-token-punctuation': '#c9d1d9',
+    '--markeasy-token-property': '#79c0ff',
+    '--markeasy-token-selector': '#a5d6ff',
+    '--markeasy-token-operator': '#c9d1d9',
+    '--markeasy-token-keyword': '#ff7b72',
+    '--markeasy-token-variable': '#7ee787',
+    '--markeasy-token-function': '#d2a8ff',
   },
   'github-light': {
-    '--slashmd-token-comment': '#6e7781',
-    '--slashmd-token-punctuation': '#24292f',
-    '--slashmd-token-property': '#0550ae',
-    '--slashmd-token-selector': '#0a3069',
-    '--slashmd-token-operator': '#24292f',
-    '--slashmd-token-keyword': '#cf222e',
-    '--slashmd-token-variable': '#116329',
-    '--slashmd-token-function': '#8250df',
+    '--markeasy-token-comment': '#6e7781',
+    '--markeasy-token-punctuation': '#24292f',
+    '--markeasy-token-property': '#0550ae',
+    '--markeasy-token-selector': '#0a3069',
+    '--markeasy-token-operator': '#24292f',
+    '--markeasy-token-keyword': '#cf222e',
+    '--markeasy-token-variable': '#116329',
+    '--markeasy-token-function': '#8250df',
   },
   monokai: {
-    '--slashmd-token-comment': '#88846f',
-    '--slashmd-token-punctuation': '#f8f8f2',
-    '--slashmd-token-property': '#66d9ef',
-    '--slashmd-token-selector': '#e6db74',
-    '--slashmd-token-operator': '#f92672',
-    '--slashmd-token-keyword': '#f92672',
-    '--slashmd-token-variable': '#a6e22e',
-    '--slashmd-token-function': '#a6e22e',
+    '--markeasy-token-comment': '#88846f',
+    '--markeasy-token-punctuation': '#f8f8f2',
+    '--markeasy-token-property': '#66d9ef',
+    '--markeasy-token-selector': '#e6db74',
+    '--markeasy-token-operator': '#f92672',
+    '--markeasy-token-keyword': '#f92672',
+    '--markeasy-token-variable': '#a6e22e',
+    '--markeasy-token-function': '#a6e22e',
   },
 };
 
-export function getSettings(): SlashMDSettings {
-  const config = vscode.workspace.getConfiguration('slashmd');
+export function getSettings(): MarkeasySettings {
+  const config = vscode.workspace.getConfiguration('markeasy');
   return {
     assetsFolder: config.get<string>('assets.folder', 'assets'),
     imagePathResolution: config.get<ImagePathResolution>('assets.imagePathResolution', 'document'),
@@ -107,6 +108,7 @@ export function getSettings(): SlashMDSettings {
     h5Indent: config.get<string>('theme.h5Indent', ''),
     boldColor: config.get<string>('theme.boldColor', ''),
     italicColor: config.get<string>('theme.italicColor', ''),
+    fontScale: config.get<number>('theme.fontScale', 1),
   };
 }
 
@@ -129,30 +131,33 @@ function getEffectiveTheme(codeTheme: CodeTheme): 'dark' | 'light' | 'github-dar
 /**
  * Generate theme CSS variable overrides based on settings
  */
-export function getThemeOverrides(settings: SlashMDSettings): ThemeOverrides {
+export function getThemeOverrides(settings: MarkeasySettings): ThemeOverrides {
   const effectiveTheme = getEffectiveTheme(settings.codeTheme);
   const overrides: ThemeOverrides = { ...(THEME_PRESETS[effectiveTheme] || THEME_PRESETS.dark) };
 
   // General heading color (kept for backwards compatibility)
-  overrides['--slashmd-heading-color'] = settings.headingColor || 'inherit';
+  overrides['--markeasy-heading-color'] = settings.headingColor || 'inherit';
 
   // Per-level heading colors - specific color takes precedence, then general headingColor, then inherit
-  overrides['--slashmd-h1-color'] = settings.h1Color || settings.headingColor || 'inherit';
-  overrides['--slashmd-h2-color'] = settings.h2Color || settings.headingColor || 'inherit';
-  overrides['--slashmd-h3-color'] = settings.h3Color || settings.headingColor || 'inherit';
-  overrides['--slashmd-h4-color'] = settings.h4Color || settings.headingColor || 'inherit';
-  overrides['--slashmd-h5-color'] = settings.h5Color || settings.headingColor || 'inherit';
+  overrides['--markeasy-h1-color'] = settings.h1Color || settings.headingColor || 'inherit';
+  overrides['--markeasy-h2-color'] = settings.h2Color || settings.headingColor || 'inherit';
+  overrides['--markeasy-h3-color'] = settings.h3Color || settings.headingColor || 'inherit';
+  overrides['--markeasy-h4-color'] = settings.h4Color || settings.headingColor || 'inherit';
+  overrides['--markeasy-h5-color'] = settings.h5Color || settings.headingColor || 'inherit';
 
   // Per-level heading indentation - use '0' as default to reset when cleared
-  overrides['--slashmd-h1-indent'] = settings.h1Indent || '0';
-  overrides['--slashmd-h2-indent'] = settings.h2Indent || '0';
-  overrides['--slashmd-h3-indent'] = settings.h3Indent || '0';
-  overrides['--slashmd-h4-indent'] = settings.h4Indent || '0';
-  overrides['--slashmd-h5-indent'] = settings.h5Indent || '0';
+  overrides['--markeasy-h1-indent'] = settings.h1Indent || '0';
+  overrides['--markeasy-h2-indent'] = settings.h2Indent || '0';
+  overrides['--markeasy-h3-indent'] = settings.h3Indent || '0';
+  overrides['--markeasy-h4-indent'] = settings.h4Indent || '0';
+  overrides['--markeasy-h5-indent'] = settings.h5Indent || '0';
 
   // Other typography colors
-  overrides['--slashmd-bold-color'] = settings.boldColor || 'inherit';
-  overrides['--slashmd-italic-color'] = settings.italicColor || 'inherit';
+  overrides['--markeasy-bold-color'] = settings.boldColor || 'inherit';
+  overrides['--markeasy-italic-color'] = settings.italicColor || 'inherit';
+
+  // Font scale
+  overrides['--markeasy-font-scale'] = String(settings.fontScale ?? 1);
 
   return overrides;
 }

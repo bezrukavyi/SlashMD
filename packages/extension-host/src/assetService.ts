@@ -59,19 +59,19 @@ export class AssetService {
 
     // Reject if path contains parent directory references
     if (normalized.includes('..')) {
-      console.warn('SlashMD: Assets folder contains "..", using default');
+      console.warn('Markeasy: Assets folder contains "..", using default');
       return 'assets';
     }
 
     // Reject absolute paths
     if (path.isAbsolute(normalized)) {
-      console.warn('SlashMD: Assets folder is absolute path, using default');
+      console.warn('Markeasy: Assets folder is absolute path, using default');
       return 'assets';
     }
 
     // Reject if starts with slash or backslash
     if (normalized.startsWith('/') || normalized.startsWith('\\')) {
-      console.warn('SlashMD: Assets folder starts with separator, using default');
+      console.warn('Markeasy: Assets folder starts with separator, using default');
       return 'assets';
     }
 
