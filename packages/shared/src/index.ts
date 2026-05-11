@@ -22,7 +22,7 @@ export const ImagePathResolutionSchema = z.enum(['document', 'workspace']);
 export const ThemeOverridesSchema = z.record(z.string(), z.string());
 
 // Settings schema
-export const SlashMDSettingsSchema = z.object({
+export const MarkeasySettingsSchema = z.object({
   assetsFolder: z.string().max(256),
   imagePathResolution: ImagePathResolutionSchema,
   formatWrap: z.number().int().min(0).max(1000),
@@ -85,7 +85,7 @@ export const UIToHostMessageSchema = z.discriminatedUnion('type', [
 export const DocInitMessageSchema = z.object({
   type: z.literal('DOC_INIT'),
   text: z.string(),
-  settings: SlashMDSettingsSchema,
+  settings: MarkeasySettingsSchema,
   assetBaseUri: z.string().optional(),
   documentDirUri: z.string().optional(),
   themeOverrides: ThemeOverridesSchema.optional(),
@@ -108,7 +108,7 @@ export const AssetWrittenMessageSchema = z.object({
 
 export const SettingsChangedMessageSchema = z.object({
   type: z.literal('SETTINGS_CHANGED'),
-  settings: SlashMDSettingsSchema,
+  settings: MarkeasySettingsSchema,
   themeOverrides: ThemeOverridesSchema.optional(),
 });
 
@@ -133,7 +133,7 @@ export type TextEdit = z.infer<typeof TextEditSchema>;
 export type CodeTheme = z.infer<typeof CodeThemeSchema>;
 export type ImagePathResolution = z.infer<typeof ImagePathResolutionSchema>;
 export type ThemeOverrides = z.infer<typeof ThemeOverridesSchema>;
-export type SlashMDSettings = z.infer<typeof SlashMDSettingsSchema>;
+export type MarkeasySettings = z.infer<typeof MarkeasySettingsSchema>;
 export type UIToHostMessage = z.infer<typeof UIToHostMessageSchema>;
 export type HostToUIMessage = z.infer<typeof HostToUIMessageSchema>;
 
@@ -156,7 +156,7 @@ export type ErrorMessage = z.infer<typeof ErrorMessageSchema>;
 export function validateUIToHostMessage(data: unknown): UIToHostMessage | null {
   const result = UIToHostMessageSchema.safeParse(data);
   if (!result.success) {
-    console.error('SlashMD: Invalid UI→Host message:', result.error.message);
+    console.error('Markeasy: Invalid UI→Host message:', result.error.message);
     return null;
   }
   return result.data;
@@ -165,7 +165,7 @@ export function validateUIToHostMessage(data: unknown): UIToHostMessage | null {
 export function validateHostToUIMessage(data: unknown): HostToUIMessage | null {
   const result = HostToUIMessageSchema.safeParse(data);
   if (!result.success) {
-    console.error('SlashMD: Invalid Host→UI message:', result.error.message);
+    console.error('Markeasy: Invalid Host→UI message:', result.error.message);
     return null;
   }
   return result.data;

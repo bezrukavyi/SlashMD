@@ -3,19 +3,23 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run SlashMD Extension",
+      "name": "Run Markeasy Extension",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/extension-host"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/extension-host"
+      ],
       "outFiles": ["${workspaceFolder}/packages/extension-host/dist/**/*.js"]
     },
     {
-      "name": "Run SlashMD Extension (with build)",
+      "name": "Run Markeasy Extension (with build)",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/extension-host"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/extension-host"
+      ],
       "outFiles": ["${workspaceFolder}/packages/extension-host/dist/**/*.js"],
       "preLaunchTask": "npm: build"
     }

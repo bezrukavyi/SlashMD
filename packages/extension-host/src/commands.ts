@@ -22,7 +22,7 @@ function getActiveMarkdownUri(): vscode.Uri | undefined {
 export function registerCommands(context: vscode.ExtensionContext): void {
   // Open as Raw Markdown command
   context.subscriptions.push(
-    vscode.commands.registerCommand('slashmd.openAsText', async () => {
+    vscode.commands.registerCommand('markeasy.openAsText', async () => {
       const uri = getActiveMarkdownUri();
       if (uri) {
         // Close current tab and open in default editor (same tab position)
@@ -34,14 +34,14 @@ export function registerCommands(context: vscode.ExtensionContext): void {
     })
   );
 
-  // Open as SlashMD command (switch from raw text to SlashMD)
+  // Open as Markeasy command (switch from raw text to Markeasy)
   context.subscriptions.push(
-    vscode.commands.registerCommand('slashmd.openAsSlashMD', async () => {
+    vscode.commands.registerCommand('markeasy.openAsMarkeasy', async () => {
       const uri = getActiveMarkdownUri();
       if (uri) {
-        // Close current tab and open in SlashMD editor (same tab position)
+        // Close current tab and open in Markeasy editor (same tab position)
         await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        await vscode.commands.executeCommand('vscode.openWith', uri, 'slashmd.editor');
+        await vscode.commands.executeCommand('vscode.openWith', uri, 'markeasy.editor');
       } else {
         vscode.window.showWarningMessage('No Markdown file is currently active');
       }
@@ -50,7 +50,7 @@ export function registerCommands(context: vscode.ExtensionContext): void {
 
   // Copy markdown content command
   context.subscriptions.push(
-    vscode.commands.registerCommand('slashmd.copyContent', async () => {
+    vscode.commands.registerCommand('markeasy.copyContent', async () => {
       const uri = getActiveMarkdownUri();
       if (!uri) {
         vscode.window.showWarningMessage('No Markdown file is currently active');
@@ -78,7 +78,7 @@ export function registerCommands(context: vscode.ExtensionContext): void {
 
   // Insert Block command (placeholder for slash menu integration)
   context.subscriptions.push(
-    vscode.commands.registerCommand('slashmd.insertBlock', async () => {
+    vscode.commands.registerCommand('markeasy.insertBlock', async () => {
       const items: vscode.QuickPickItem[] = [
         { label: 'Paragraph', description: 'Plain text block' },
         { label: 'Heading 1', description: '# Large heading' },

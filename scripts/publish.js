@@ -57,7 +57,7 @@ async function runStep(label, fn) {
 }
 
 async function main() {
-  console.log(chalk.bold.cyan("\n  SlashMD Publisher\n"));
+  console.log(chalk.bold.cyan("\n  Markeasy Publisher\n"));
 
   // Get current version
   const pkg = getPackageJson();
@@ -112,9 +112,9 @@ async function main() {
     exec("npm run package");
   });
 
-  const vsixPath = path.join(EXTENSION_DIR, "slashmd.vsix");
+  const vsixPath = path.join(EXTENSION_DIR, "Markeasy.vsix");
   if (!fs.existsSync(vsixPath)) {
-    console.error(chalk.red("\n  ✗ slashmd.vsix not found after packaging\n"));
+    console.error(chalk.red("\n  ✗ Markeasy.vsix not found after packaging\n"));
     process.exit(1);
   }
 
@@ -124,7 +124,7 @@ async function main() {
 
   // Publish to VS Code Marketplace
   await runStep("Publishing to VS Code Marketplace", () => {
-    exec(`npx vsce publish --packagePath slashmd.vsix`, { cwd: EXTENSION_DIR });
+    exec(`npx vsce publish --packagePath Markeasy.vsix`, { cwd: EXTENSION_DIR });
   });
 
   // Get Open VSX token
@@ -138,7 +138,7 @@ async function main() {
 
   // Publish to Open VSX
   await runStep("Publishing to Open VSX", () => {
-    exec(`npx ovsx publish slashmd.vsix -p ${ovsxToken}`, {
+    exec(`npx ovsx publish Markeasy.vsix -p ${ovsxToken}`, {
       cwd: EXTENSION_DIR,
     });
   });
@@ -149,12 +149,12 @@ async function main() {
   console.log(
     chalk.gray("  VS Code:      ") +
       chalk.cyan(
-        "https://marketplace.visualstudio.com/items?itemName=slashmd.slashmd"
+        "https://marketplace.visualstudio.com/items?itemName=Markeasy.Markeasy"
       )
   );
   console.log(
     chalk.gray("  Open VSX:     ") +
-      chalk.cyan("https://open-vsx.org/extension/slashmd/slashmd")
+      chalk.cyan("https://open-vsx.org/extension/Markeasy/Markeasy")
   );
   console.log();
 }

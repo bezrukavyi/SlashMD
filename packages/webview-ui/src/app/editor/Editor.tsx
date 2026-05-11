@@ -289,7 +289,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
   );
 
   const initialConfig = {
-    namespace: 'SlashMD',
+    namespace: 'Markeasy',
     theme: editorTheme,
     nodes: editorNodes,
     onError: editorOnError,

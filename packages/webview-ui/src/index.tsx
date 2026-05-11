@@ -41,7 +41,7 @@ import 'prismjs/components/prism-graphql';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 
-console.log('SlashMD webview initializing...');
+console.log('Markeasy webview initializing...');
 
 const container = document.getElementById('root');
 if (container) {

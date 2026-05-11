@@ -1,17 +1,17 @@
 import * as vscode from 'vscode';
-import { SlashMDEditorProvider } from './customEditor';
+import { MarkeasyEditorProvider } from './customEditor';
 import { registerCommands } from './commands';
 
 export function activate(context: vscode.ExtensionContext): void {
   // Register the custom editor provider
-  context.subscriptions.push(SlashMDEditorProvider.register(context));
+  context.subscriptions.push(MarkeasyEditorProvider.register(context));
 
   // Register commands
   registerCommands(context);
 
-  console.log('SlashMD extension activated');
+  console.log('Markeasy extension activated');
 }
 
 export function deactivate(): void {
-  console.log('SlashMD extension deactivated');
+  console.log('Markeasy extension deactivated');
 }

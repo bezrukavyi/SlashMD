@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SlashMD is a VS Code/Cursor extension that opens Markdown files in a Notion-style, block-based WYSIWYG custom editor by default while keeping files stored as plain Markdown.
+Markeasy is a VS Code/Cursor extension that opens Markdown files in a Notion-style, block-based WYSIWYG custom editor by default while keeping files stored as plain Markdown.
 
 ## Build Commands
 
@@ -38,7 +38,7 @@ npm run build --workspace=packages/webview-ui
 ## Development Workflow
 
 1. Run `npm run dev` to start watch mode for all packages
-2. Press F5 in VS Code to launch the Extension Development Host (use "Run SlashMD Extension (with build)" configuration for fresh builds)
+2. Press F5 in VS Code to launch the Extension Development Host (use "Run Markeasy Extension (with build)" configuration for fresh builds)
 3. Open any `.md` file to test the custom editor
 
 ## Architecture

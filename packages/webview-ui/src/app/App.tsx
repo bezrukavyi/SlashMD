@@ -8,7 +8,7 @@ import {
 } from "../messaging";
 import type {
   HostToUIMessage,
-  SlashMDSettings,
+  MarkeasySettings,
   TextEdit,
   ThemeOverrides,
 } from "../types";
@@ -50,7 +50,7 @@ function computeMinimalEdits(oldText: string, newText: string): TextEdit[] {
 
 export function App() {
   const [content, setContent] = useState<string | null>(null);
-  const [settings, setSettings] = useState<SlashMDSettings | null>(null);
+  const [settings, setSettings] = useState<MarkeasySettings | null>(null);
   const [assetBaseUri, setAssetBaseUri] = useState<string | undefined>(
     undefined,
   );
@@ -66,13 +66,13 @@ export function App() {
   const lastDocumentContent = useRef<string>("");
 
   useEffect(() => {
-    console.log("SlashMD App: Setting up message handler");
+    console.log("Markeasy App: Setting up message handler");
     const removeHandler = addMessageHandler((message: HostToUIMessage) => {
-      console.log("SlashMD App: Handling message:", message.type);
+      console.log("Markeasy App: Handling message:", message.type);
       switch (message.type) {
         case "DOC_INIT":
           console.log(
-            "SlashMD App: Received DOC_INIT with",
+            "Markeasy App: Received DOC_INIT with",
             message.text?.length,
             "chars",
           );
