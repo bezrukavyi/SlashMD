@@ -1,6 +1,13 @@
 /* VS Code theme integration */
 :root {
-  --vscode-font-family: var(--vscode-editor-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  --vscode-font-family: var(
+    --vscode-editor-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   --vscode-font-size: var(--vscode-editor-font-size, 14px);
   --markeasy-font-scale: 1;
   --vscode-foreground: var(--vscode-editor-foreground, #333);
@@ -181,9 +188,13 @@ body {
   padding-left: 24px;
 }
 
+.editor-listitem-checked {
+  text-decoration: line-through;
+}
+
 .editor-listitem-checked::before,
 .editor-listitem-unchecked::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 4px;
@@ -200,7 +211,7 @@ body {
 }
 
 .editor-listitem-checked::after {
-  content: '✓';
+  content: "✓";
   position: absolute;
   left: 3px;
   top: 2px;
@@ -229,7 +240,7 @@ body {
   padding: 12px 16px;
   background: var(--vscode-code-bg);
   border-radius: 4px;
-  font-family: 'Fira Code', 'Consolas', monospace;
+  font-family: "Fira Code", "Consolas", monospace;
   font-size: 0.9em;
   overflow-x: auto;
   white-space: pre;
@@ -255,7 +266,9 @@ body {
   border-radius: 4px;
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
 }
 
 .code-language-button:hover {
@@ -277,7 +290,10 @@ body {
   border-radius: 4px;
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    color 0.15s;
 }
 
 .code-copy-button:hover {
@@ -380,10 +396,16 @@ body {
 }
 
 .editor-text-code {
-  font-family: var(--vscode-editor-font-family, 'Fira Code', 'Consolas', monospace);
+  font-family: var(
+    --vscode-editor-font-family,
+    "Fira Code",
+    "Consolas",
+    monospace
+  );
   background: var(--vscode-textCodeBlock-background, rgba(135, 131, 120, 0.15));
   color: var(--vscode-textPreformat-foreground, inherit);
-  border: 1px solid var(--vscode-textSeparator-foreground, rgba(135, 131, 120, 0.3));
+  border: 1px solid
+    var(--vscode-textSeparator-foreground, rgba(135, 131, 120, 0.3));
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 0.875em;
@@ -432,7 +454,7 @@ body {
 }
 
 .divider-block::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
@@ -588,7 +610,7 @@ body {
 
 /* Toggle arrow - positioned absolutely */
 .toggle-title::before {
-  content: '▶';
+  content: "▶";
   position: absolute;
   left: 12px;
   top: 50%;
@@ -606,7 +628,7 @@ body {
 
 /* Make the arrow click area larger */
 .toggle-title::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -658,7 +680,7 @@ body {
 
 /* Empty content placeholder */
 .toggle-content-area:empty::before {
-  content: 'Type content here...';
+  content: "Type content here...";
   color: var(--vscode-foreground);
   opacity: 0.4;
 }
@@ -920,26 +942,21 @@ body {
   background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.1));
 }
 
-/* Block Delete Button */
-.block-delete-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 50;
-  padding: 4px 4px 4px 12px;
-  background: none;
-  border: none;
-}
-
-.editor-inner:hover .block-delete-button {
-  opacity: 0.4;
-}
-
-.block-delete-button:hover {
+.drag-handle.selected {
   opacity: 1;
+}
+
+.drag-handle.selected .drag-handle-icon {
+  background: var(--vscode-toolbar-activeBackground, rgba(128, 128, 128, 0.2));
+}
+
+.block-selected {
+  background: var(--vscode-editor-selectionBackground, rgba(38, 79, 120, 0.4));
+  border-radius: 4px;
+}
+
+.editor-inner:hover {
+  opacity: 0.4;
 }
 
 .block-delete-icon {
@@ -952,11 +969,6 @@ body {
   color: var(--vscode-foreground);
   user-select: none;
   border-radius: 4px;
-}
-
-.block-delete-button:hover .block-delete-icon {
-  background: var(--vscode-inputValidation-errorBackground, rgba(255, 0, 0, 0.15));
-  color: var(--vscode-errorForeground, #f44336);
 }
 
 /* Code syntax highlighting */
@@ -1014,7 +1026,7 @@ body {
 
 /* Focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid var(--vscode-link);
+  outline: none;
   outline-offset: 2px;
 }
 
@@ -1195,7 +1207,9 @@ body {
   font-size: 14px;
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
 }
 
 .image-modal-tab:hover {
@@ -1223,7 +1237,9 @@ body {
   border: 2px dashed var(--vscode-border);
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .image-modal-dropzone:hover {

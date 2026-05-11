@@ -68,7 +68,7 @@ export function App() {
   useEffect(() => {
     console.log("Markeasy App: Setting up message handler");
     const removeHandler = addMessageHandler((message: HostToUIMessage) => {
-      console.log("Markeasy App: Handling message:", message.type);
+      console.log("Markasdaseasy App: Handling message:", message.type);
       switch (message.type) {
         case "DOC_INIT":
           console.log(

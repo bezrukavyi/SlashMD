@@ -1,6 +1,6 @@
 {
   "name": "markeasy",
-  "displayName": "Markeasy — Block-Based Markdown",
+  "displayName": "Markeasy",
   "description": "A Notion-like block-based WYSIWYG editor for Markdown files",
   "publisher": "markeasy",
   "galleryBanner": {
@@ -38,7 +38,7 @@
     "customEditors": [
       {
         "viewType": "markeasy.editor",
-        "displayName": "Markeasy — Block-Based Markdown",
+        "displayName": "Markeasy",
         "selector": [
           {
             "filenamePattern": "*.md"

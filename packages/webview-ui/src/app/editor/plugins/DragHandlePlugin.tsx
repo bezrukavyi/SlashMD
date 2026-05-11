@@ -1,6 +1,11 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $getNodeByKey, $getSelection, $isRangeSelection, $createParagraphNode } from 'lexical';
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {
+  $getNodeByKey,
+  $getSelection,
+  $isRangeSelection,
+  $createParagraphNode,
+} from "lexical";
 
 interface DragHandleState {
   isVisible: boolean;
@@ -12,7 +17,7 @@ interface DragHandleState {
 // Find the top-level block element (direct child of editor root)
 function getBlockElement(
   target: HTMLElement,
-  editorRoot: HTMLElement
+  editorRoot: HTMLElement,
 ): HTMLElement | null {
   let element: HTMLElement | null = target;
 
@@ -32,7 +37,7 @@ function getBlockElement(
 // Find block element based on Y position
 function getBlockElementAtY(
   y: number,
-  editorRoot: HTMLElement
+  editorRoot: HTMLElement,
 ): HTMLElement | null {
   const children = editorRoot.children;
   for (let i = 0; i < children.length; i++) {
@@ -50,7 +55,7 @@ function getNodeKeyFromBlockElement(element: HTMLElement): string | null {
   // Lexical stores the key in __lexicalKey_[editorKey] property
   const keys = Object.keys(element);
   for (const key of keys) {
-    if (key.startsWith('__lexicalKey_')) {
+    if (key.startsWith("__lexicalKey_")) {
       return (element as unknown as Record<string, string>)[key] || null;
     }
   }
@@ -66,10 +71,15 @@ export function DragHandlePlugin() {
     blockElement: null,
   });
   const [isDragging, setIsDragging] = useState(false);
-  const [dropIndicator, setDropIndicator] = useState<{ top: number } | null>(null);
+  const [selectedNodeKey, setSelectedNodeKey] = useState<string | null>(null);
+  const selectedNodeKeyRef = useRef<string | null>(null);
+  selectedNodeKeyRef.current = selectedNodeKey;
+  const [dropIndicator, setDropIndicator] = useState<{ top: number } | null>(
+    null,
+  );
   const draggedNodeKey = useRef<string | null>(null);
   const dropTargetKey = useRef<string | null>(null);
-  const dropPosition = useRef<'before' | 'after'>('after');
+  const dropPosition = useRef<"before" | "after">("after");
   const handleRef = useRef<HTMLDivElement | null>(null);
   // Use ref to access isDragging in event handlers without causing re-registration
   const isDraggingRef = useRef(false);
@@ -123,12 +133,42 @@ export function DragHandlePlugin() {
     });
   }, [editor]);
 
+  // Apply/remove .block-selected class on the DOM element when selection changes
+  useEffect(() => {
+    const editorElement = editor.getRootElement();
+    if (!editorElement) return;
+
+    // Remove class from all blocks first
+    editorElement.querySelectorAll(".block-selected").forEach((el) => {
+      el.classList.remove("block-selected");
+    });
+
+    if (selectedNodeKey) {
+      const el = editor.getElementByKey(selectedNodeKey);
+      el?.classList.add("block-selected");
+    }
+  }, [editor, selectedNodeKey]);
+
+  // Deselect when clicking outside the editor
+  useEffect(() => {
+    const handleDocClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".drag-handle")) {
+        setSelectedNodeKey(null);
+      }
+    };
+    document.addEventListener("mousedown", handleDocClick);
+    return () => document.removeEventListener("mousedown", handleDocClick);
+  }, []);
+
   useEffect(() => {
     const editorElement = editor.getRootElement();
     if (!editorElement) return;
 
     // Get the .editor-inner container (parent of editor root)
-    const editorInner = editorElement.closest('.editor-inner');
+    const editorInner = editorElement.closest(
+      ".editor-inner",
+    ) as HTMLElement | null;
     if (!editorInner) return;
 
     const handleMouseMove = (event: MouseEvent) => {
@@ -137,7 +177,7 @@ export function DragHandlePlugin() {
       const target = event.target as HTMLElement;
 
       // Ignore if hovering over the drag handle itself
-      if (target.closest('.drag-handle')) {
+      if (target.closest(".drag-handle")) {
         return;
       }
 
@@ -172,6 +212,21 @@ export function DragHandlePlugin() {
 
     const handleMouseLeave = () => {
       if (isDraggingRef.current) return;
+      if (selectedNodeKeyRef.current) {
+        // Keep handle visible at the selected block's position
+        const selectedEl = editor.getElementByKey(selectedNodeKeyRef.current);
+        if (selectedEl) {
+          const rect = selectedEl.getBoundingClientRect();
+          const editorRect = editorElement.getBoundingClientRect();
+          setDragState({
+            isVisible: true,
+            position: { top: rect.top - editorRect.top, left: 0 },
+            nodeKey: selectedNodeKeyRef.current,
+            blockElement: selectedEl,
+          });
+          return;
+        }
+      }
       setDragState((prev) => ({ ...prev, isVisible: false }));
     };
 
@@ -180,7 +235,7 @@ export function DragHandlePlugin() {
       if (!draggedNodeKey.current) return;
 
       event.preventDefault();
-      event.dataTransfer!.dropEffect = 'move';
+      event.dataTransfer!.dropEffect = "move";
 
       const target = event.target as HTMLElement;
       let blockElement = getBlockElement(target, editorElement);
@@ -196,13 +251,14 @@ export function DragHandlePlugin() {
           // Determine if dropping before or after based on cursor position
           const rect = blockElement.getBoundingClientRect();
           const midpoint = rect.top + rect.height / 2;
-          dropPosition.current = event.clientY < midpoint ? 'before' : 'after';
+          dropPosition.current = event.clientY < midpoint ? "before" : "after";
 
           // Show drop indicator
           const editorRect = editorElement.getBoundingClientRect();
-          const indicatorTop = dropPosition.current === 'before'
-            ? rect.top - editorRect.top
-            : rect.bottom - editorRect.top;
+          const indicatorTop =
+            dropPosition.current === "before"
+              ? rect.top - editorRect.top
+              : rect.bottom - editorRect.top;
           setDropIndicator({ top: indicatorTop });
         }
       }
@@ -217,7 +273,7 @@ export function DragHandlePlugin() {
           const targetNode = $getNodeByKey(dropTargetKey.current!);
 
           if (draggedNode && targetNode && draggedNode !== targetNode) {
-            if (dropPosition.current === 'before') {
+            if (dropPosition.current === "before") {
               targetNode.insertBefore(draggedNode);
             } else {
               targetNode.insertAfter(draggedNode);
@@ -241,18 +297,18 @@ export function DragHandlePlugin() {
       }
     };
 
-    editorInner.addEventListener('mousemove', handleMouseMove);
-    editorInner.addEventListener('mouseleave', handleMouseLeave);
-    editorInner.addEventListener('dragover', handleDragOver);
-    editorInner.addEventListener('drop', handleDrop);
-    editorInner.addEventListener('dragleave', handleDragLeave);
+    editorInner.addEventListener("mousemove", handleMouseMove);
+    editorInner.addEventListener("mouseleave", handleMouseLeave);
+    editorInner.addEventListener("dragover", handleDragOver);
+    editorInner.addEventListener("drop", handleDrop);
+    editorInner.addEventListener("dragleave", handleDragLeave);
 
     return () => {
-      editorInner.removeEventListener('mousemove', handleMouseMove);
-      editorInner.removeEventListener('mouseleave', handleMouseLeave);
-      editorInner.removeEventListener('dragover', handleDragOver);
-      editorInner.removeEventListener('drop', handleDrop);
-      editorInner.removeEventListener('dragleave', handleDragLeave);
+      editorInner.removeEventListener("mousemove", handleMouseMove);
+      editorInner.removeEventListener("mouseleave", handleMouseLeave);
+      editorInner.removeEventListener("dragover", handleDragOver);
+      editorInner.removeEventListener("drop", handleDrop);
+      editorInner.removeEventListener("dragleave", handleDragLeave);
     };
   }, [editor]);
 
@@ -260,8 +316,8 @@ export function DragHandlePlugin() {
     if (dragState.nodeKey) {
       draggedNodeKey.current = dragState.nodeKey;
       setIsDragging(true);
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', dragState.nodeKey);
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", dragState.nodeKey);
 
       // Set a drag image
       if (dragState.blockElement) {
@@ -314,52 +370,41 @@ export function DragHandlePlugin() {
           {/* Drag handle on the left */}
           <div
             ref={handleRef}
-            className={`drag-handle ${isDragging ? 'dragging' : ''}`}
+            className={`drag-handle ${isDragging ? "dragging" : ""} ${selectedNodeKey === dragState.nodeKey ? "selected" : ""}`}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: dragState.position.top,
               left: dragState.position.left,
-              transform: 'translateX(-100%)',
+              transform: "translateX(-100%)",
             }}
             draggable
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedNodeKey((prev) =>
+                prev === dragState.nodeKey ? null : dragState.nodeKey,
+              );
+            }}
             aria-label="Drag to reorder block"
             role="button"
             tabIndex={0}
           >
             <span className="drag-handle-icon">⋮⋮</span>
           </div>
-
-          {/* Delete button on the right */}
-          <button
-            className="block-delete-button"
-            style={{
-              position: 'absolute',
-              top: dragState.position.top,
-              right: 0,
-              transform: 'translateX(100%)',
-            }}
-            onClick={handleDelete}
-            aria-label="Delete block"
-            title="Delete block"
-            tabIndex={0}
-          >
-            <span className="block-delete-icon">×</span>
-          </button>
         </>
       )}
       {dropIndicator && (
         <div
           className="drop-indicator"
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: dropIndicator.top,
             left: 0,
             right: 0,
             height: 2,
-            background: 'var(--vscode-focusBorder, #007acc)',
-            pointerEvents: 'none',
+            background: "var(--vscode-focusBorder, #007acc)",
+            pointerEvents: "none",
             zIndex: 100,
           }}
         />
