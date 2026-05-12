@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -16,7 +16,7 @@ import { ListNode, ListItemNode } from '@lexical/list';
 import { CodeNode, CodeHighlightNode, registerCodeHighlighting } from '@lexical/code';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { TableNode, TableRowNode, TableCellNode } from '@lexical/table';
-import { EditorState, LexicalEditor, COMMAND_PRIORITY_LOW, UNDO_COMMAND, REDO_COMMAND } from 'lexical';
+import { EditorState, LexicalEditor, COMMAND_PRIORITY_LOW, COMMAND_PRIORITY_CRITICAL, UNDO_COMMAND, REDO_COMMAND, KEY_DOWN_COMMAND, $getSelection, $isRangeSelection, $isElementNode, $createTextNode } from 'lexical';
 
 import { Toolbar } from './components/Toolbar';
 import { SlashMenuPlugin } from './plugins/SlashMenuPlugin';
@@ -161,7 +161,11 @@ function ScrollPreservingHistoryPlugin() {
   useEffect(() => {
     const saveAndRestore = () => {
       const scrollY = window.scrollY;
-      setTimeout(() => window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior }), 0);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
+        });
+      });
       return false;
     };
 
@@ -171,6 +175,36 @@ function ScrollPreservingHistoryPlugin() {
       unregisterUndo();
       unregisterRedo();
     };
+  }, [editor]);
+
+  return null;
+}
+
+function ShiftDeletePlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      KEY_DOWN_COMMAND,
+      (e: KeyboardEvent) => {
+        if (e.shiftKey && e.key === 'Delete') {
+          e.preventDefault();
+          editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) return;
+            const anchorNode = selection.anchor.getNode();
+            const node = $isElementNode(anchorNode) ? anchorNode : anchorNode.getParentOrThrow();
+            node.clear();
+            const emptyText = $createTextNode('');
+            node.append(emptyText);
+            emptyText.select(0, 0);
+          });
+          return true;
+        }
+        return false;
+      },
+      COMMAND_PRIORITY_CRITICAL,
+    );
   }, [editor]);
 
   return null;
@@ -235,8 +269,16 @@ function ExternalUpdatePlugin({
 }) {
   const [editor] = useLexicalComposerContext();
   const lastContentHashRef = useRef<number>(0);
+  const isFirstRun = useRef(true);
 
   useEffect(() => {
+    // InitializePlugin handles the first render — skip it here to avoid double-parsing
+    if (isFirstRun.current) {
+      isFirstRun.current = false;
+      lastContentHashRef.current = simpleHash(content);
+      return;
+    }
+
     // Skip if this is our own update echoing back
     const timeSinceUpdate = Date.now() - lastInternalUpdate.current;
     if (timeSinceUpdate < 500) {
@@ -280,7 +322,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
   }, []);
 
   const handleChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
+    (_editorState: EditorState, editor: LexicalEditor) => {
       // Store the latest editor for debounced processing
       pendingEditorRef.current = editor;
 
@@ -334,6 +376,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
             />
             <HistoryPlugin />
             <ScrollPreservingHistoryPlugin />
+            <ShiftDeletePlugin />
             <ListPlugin />
             <CheckListPlugin />
             <TabIndentationPlugin />

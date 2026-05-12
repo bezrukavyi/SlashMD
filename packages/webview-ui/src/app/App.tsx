@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { Editor } from "./editor";
-import {
-  addMessageHandler,
-  requestInit,
-  applyTextEdits,
-  writeAsset,
-} from "../messaging";
+import { addMessageHandler, requestInit, applyTextEdits } from "../messaging";
 import type {
   HostToUIMessage,
   MarkeasySettings,
@@ -66,16 +61,9 @@ export function App() {
   const lastDocumentContent = useRef<string>("");
 
   useEffect(() => {
-    console.log("Markeasy App: Setting up message handler");
     const removeHandler = addMessageHandler((message: HostToUIMessage) => {
-      console.log("Markasdaseasy App: Handling message:", message.type);
       switch (message.type) {
         case "DOC_INIT":
-          console.log(
-            "Markeadasdasy App: Received DOC_INIT with",
-            message.text?.length,
-            "chars",
-          );
           lastDocumentContent.current = message.text;
           setContent(message.text);
           setSettings(message.settings);
@@ -132,14 +120,6 @@ export function App() {
       applyTextEdits(edits, "typing");
     }
   }, []);
-
-  const handleImagePaste = useCallback(
-    (dataUri: string, callback: (relPath: string) => void) => {
-      pendingAssetCallback.current = callback;
-      writeAsset(dataUri);
-    },
-    [],
-  );
 
   if (content === null) {
     return (

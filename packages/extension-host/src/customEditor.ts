@@ -144,6 +144,7 @@ export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
               }
 
               await vscode.workspace.applyEdit(edit);
+              lastSentContent = document.getText();
               isApplyingEdits = false;
             }
             break;
