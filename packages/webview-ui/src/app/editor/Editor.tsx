@@ -16,7 +16,7 @@ import { ListNode, ListItemNode } from '@lexical/list';
 import { CodeNode, CodeHighlightNode, registerCodeHighlighting } from '@lexical/code';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
 import { TableNode, TableRowNode, TableCellNode } from '@lexical/table';
-import { EditorState, LexicalEditor } from 'lexical';
+import { EditorState, LexicalEditor, COMMAND_PRIORITY_LOW, UNDO_COMMAND, REDO_COMMAND } from 'lexical';
 
 import { Toolbar } from './components/Toolbar';
 import { SlashMenuPlugin } from './plugins/SlashMenuPlugin';
@@ -150,6 +150,27 @@ function CodeHighlightPlugin() {
 
   useEffect(() => {
     return registerCodeHighlighting(editor);
+  }, [editor]);
+
+  return null;
+}
+
+function ScrollPreservingHistoryPlugin() {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    const saveAndRestore = () => {
+      const scrollY = window.scrollY;
+      setTimeout(() => window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior }), 0);
+      return false;
+    };
+
+    const unregisterUndo = editor.registerCommand(UNDO_COMMAND, saveAndRestore, COMMAND_PRIORITY_LOW);
+    const unregisterRedo = editor.registerCommand(REDO_COMMAND, saveAndRestore, COMMAND_PRIORITY_LOW);
+    return () => {
+      unregisterUndo();
+      unregisterRedo();
+    };
   }, [editor]);
 
   return null;
@@ -312,6 +333,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
               ErrorBoundary={LexicalErrorBoundary}
             />
             <HistoryPlugin />
+            <ScrollPreservingHistoryPlugin />
             <ListPlugin />
             <CheckListPlugin />
             <TabIndentationPlugin />

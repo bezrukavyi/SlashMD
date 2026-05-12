@@ -72,7 +72,7 @@ export function App() {
       switch (message.type) {
         case "DOC_INIT":
           console.log(
-            "Markeasy App: Received DOC_INIT with",
+            "Markeadasdasy App: Received DOC_INIT with",
             message.text?.length,
             "chars",
           );
