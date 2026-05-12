@@ -223,6 +223,14 @@ body {
   list-style-type: none;
 }
 
+/* Hide the checkbox pseudo-elements on container items that wrap a nested list.
+   The checked/unchecked class still supplies the correct margin/padding for
+   alignment; we only suppress the visible box that would appear as a duplicate. */
+.editor-nested-listitem::before,
+.editor-nested-listitem::after {
+  content: none;
+}
+
 /* Quote */
 .editor-quote {
   margin: 8px 0;

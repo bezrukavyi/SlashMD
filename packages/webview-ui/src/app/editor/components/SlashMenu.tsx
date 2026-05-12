@@ -8,6 +8,7 @@ import {
   TextNode,
   LexicalEditor,
 } from 'lexical';
+import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
 import { $createListNode, $createListItemNode } from '@lexical/list';
 import { $createCodeNode } from '@lexical/code';
@@ -48,8 +49,7 @@ const BLOCK_OPTIONS: BlockOption[] = [
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-          const node = $createParagraphNode();
-          selection.insertNodes([node]);
+          $setBlocksType(selection, () => $createParagraphNode());
         }
       });
     },
@@ -64,8 +64,7 @@ const BLOCK_OPTIONS: BlockOption[] = [
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-          const node = $createHeadingNode('h1');
-          selection.insertNodes([node]);
+          $setBlocksType(selection, () => $createHeadingNode('h1'));
         }
       });
     },
@@ -80,8 +79,7 @@ const BLOCK_OPTIONS: BlockOption[] = [
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-          const node = $createHeadingNode('h2');
-          selection.insertNodes([node]);
+          $setBlocksType(selection, () => $createHeadingNode('h2'));
         }
       });
     },
@@ -96,8 +94,7 @@ const BLOCK_OPTIONS: BlockOption[] = [
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-          const node = $createHeadingNode('h3');
-          selection.insertNodes([node]);
+          $setBlocksType(selection, () => $createHeadingNode('h3'));
         }
       });
     },
@@ -166,8 +163,7 @@ const BLOCK_OPTIONS: BlockOption[] = [
       editor.update(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
-          const node = $createQuoteNode();
-          selection.insertNodes([node]);
+          $setBlocksType(selection, () => $createQuoteNode());
         }
       });
     },

@@ -10,6 +10,7 @@ import {
   TextFormatType,
 } from "lexical";
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { INSERT_CHECK_LIST_COMMAND } from "@lexical/list";
 import { getSelectedNode } from "../utils";
 import { openUrl } from "../../../messaging";
 
@@ -274,6 +275,18 @@ export function Toolbar() {
             title="Inline Code (Cmd+E)"
           >
             {"</>"}
+          </button>
+          <div className="toolbar-divider" />
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+            }}
+            className="toolbar-button"
+            title="Convert to checklist"
+          >
+            ☑
           </button>
 
           {state.showLinkInput && (

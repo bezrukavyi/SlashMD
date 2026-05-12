@@ -152,11 +152,12 @@ function convertQuoteNode(node: ElementNode): Blockquote {
 function convertListNode(node: ListNode): List {
   const listType = node.getListType();
   const ordered = listType === 'number';
+  const isCheckList = listType === 'check';
   const children: ListItem[] = [];
 
   for (const child of node.getChildren()) {
     if ($isListItemNode(child)) {
-      children.push(convertListItemNode(child, ordered));
+      children.push(convertListItemNode(child, isCheckList));
     }
   }
 
@@ -168,7 +169,7 @@ function convertListNode(node: ListNode): List {
   };
 }
 
-function convertListItemNode(node: ListItemNode, _ordered: boolean): ListItem {
+function convertListItemNode(node: ListItemNode, isCheckList: boolean): ListItem {
   const children: (Paragraph | List)[] = [];
   const inlineChildren: PhrasingContent[] = [];
 
@@ -191,12 +192,21 @@ function convertListItemNode(node: ListItemNode, _ordered: boolean): ListItem {
     children.push({ type: 'paragraph', children: inlineChildren });
   }
 
-  const checked = node.getChecked?.();
+  // For check lists, the parent list type is the source of truth: every item
+  // must serialize as a checkbox. Otherwise nested items whose __checked got
+  // cleared (e.g. by Lexical's ListItemNode transform) would write as plain `-`.
+  const rawChecked = node.getChecked?.();
+  let checked: boolean | null;
+  if (isCheckList) {
+    checked = rawChecked === true ? true : false;
+  } else {
+    checked = rawChecked !== undefined ? rawChecked : null;
+  }
 
   return {
     type: 'listItem',
     spread: false,
-    checked: checked !== undefined ? checked : null,
+    checked,
     children: children.length > 0 ? children : [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }],
   };
 }

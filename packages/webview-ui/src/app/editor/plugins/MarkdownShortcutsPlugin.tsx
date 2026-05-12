@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { useEffect } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   registerMarkdownShortcuts,
   UNORDERED_LIST,
@@ -7,7 +7,7 @@ import {
   CHECK_LIST,
   HEADING,
   QUOTE,
-} from '@lexical/markdown';
+} from "@lexical/markdown";
 
 /**
  * Plugin that enables markdown shortcuts for common block types.

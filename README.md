@@ -16,6 +16,12 @@ Markdown is powerful but editing raw syntax can be tedious. Markeasy gives you t
 
 ## Features
 
+<https://burberry.atlassian.net/browse/EWS-1316>
+
+tps\://burberry.atlassian.net/browse/EWS-1316
+
+<https://burberry.atlassian.net/browse/EWS-1316>
+
 ### Slash Commands
 
 Type `/` anywhere to insert blocks with fuzzy search. Headings, lists, code blocks, tables, callouts — all just a keystroke away.
@@ -49,7 +55,7 @@ You can also type ` ```lang ` on an empty line and press Enter to create a code 
 Select text to reveal the formatting toolbar:
 
 - **Bold** (Cmd/Ctrl+B)
-- _Italic_ (Cmd/Ctrl+I)
+- *Italic* (Cmd/Ctrl+I)
 - `Code` (Cmd/Ctrl+E)
 - [Links](.) (Cmd/Ctrl+K)
 - ~~Strikethrough~~
@@ -128,19 +134,19 @@ Leave any setting empty to use the default.
 | `markeasy.callouts.style`     | Callout syntax (`admonition` or `emoji`) | `admonition` |
 | `markeasy.toggles.syntax`     | Toggle syntax (`details` or `list`)      | `details`    |
 | `markeasy.theme.codeTheme`    | Code block syntax highlighting theme     | `auto`       |
-| `markeasy.theme.headingColor` | Color for all headings (fallback)        | _(none)_     |
-| `markeasy.theme.h1Color`      | Color for H1 headings                    | _(none)_     |
-| `markeasy.theme.h2Color`      | Color for H2 headings                    | _(none)_     |
-| `markeasy.theme.h3Color`      | Color for H3 headings                    | _(none)_     |
-| `markeasy.theme.h4Color`      | Color for H4 headings                    | _(none)_     |
-| `markeasy.theme.h5Color`      | Color for H5 headings                    | _(none)_     |
-| `markeasy.theme.h1Indent`     | Left indent for H1 headings              | _(none)_     |
-| `markeasy.theme.h2Indent`     | Left indent for H2 headings              | _(none)_     |
-| `markeasy.theme.h3Indent`     | Left indent for H3 headings              | _(none)_     |
-| `markeasy.theme.h4Indent`     | Left indent for H4 headings              | _(none)_     |
-| `markeasy.theme.h5Indent`     | Left indent for H5 headings              | _(none)_     |
-| `markeasy.theme.boldColor`    | Color for bold text                      | _(none)_     |
-| `markeasy.theme.italicColor`  | Color for italic text                    | _(none)_     |
+| `markeasy.theme.headingColor` | Color for all headings (fallback)        | *(none)*     |
+| `markeasy.theme.h1Color`      | Color for H1 headings                    | *(none)*     |
+| `markeasy.theme.h2Color`      | Color for H2 headings                    | *(none)*     |
+| `markeasy.theme.h3Color`      | Color for H3 headings                    | *(none)*     |
+| `markeasy.theme.h4Color`      | Color for H4 headings                    | *(none)*     |
+| `markeasy.theme.h5Color`      | Color for H5 headings                    | *(none)*     |
+| `markeasy.theme.h1Indent`     | Left indent for H1 headings              | *(none)*     |
+| `markeasy.theme.h2Indent`     | Left indent for H2 headings              | *(none)*     |
+| `markeasy.theme.h3Indent`     | Left indent for H3 headings              | *(none)*     |
+| `markeasy.theme.h4Indent`     | Left indent for H4 headings              | *(none)*     |
+| `markeasy.theme.h5Indent`     | Left indent for H5 headings              | *(none)*     |
+| `markeasy.theme.boldColor`    | Color for bold text                      | *(none)*     |
+| `markeasy.theme.italicColor`  | Color for italic text                    | *(none)*     |
 
 ## Requirements
 

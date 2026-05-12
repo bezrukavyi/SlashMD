@@ -322,17 +322,25 @@ function convertList(node: List): ListNode {
   const list = $createListNode(listType);
 
   for (const item of node.children) {
-    const listItem = convertListItem(item, node);
+    const listItem = convertListItem(item, isCheckList);
     list.append(listItem);
   }
 
   return list;
 }
 
-function convertListItem(node: ListItem, parentList: List): ListItemNode {
-  const listItem = $createListItemNode(
-    parentList.ordered === false && node.checked !== null ? node.checked : undefined
-  );
+function convertListItem(node: ListItem, isCheckList: boolean): ListItemNode {
+  // Inside a check list every item must carry a boolean checked state so that
+  // Lexical's ListItemNode transform keeps it (it clears __checked only for
+  // items whose parent list type is not 'check', but never sets a default).
+  let checked: boolean | undefined;
+  if (isCheckList) {
+    checked = node.checked === true ? true : false;
+  } else {
+    checked = undefined;
+  }
+
+  const listItem = $createListItemNode(checked);
 
   for (const child of node.children) {
     if (child.type === 'paragraph') {

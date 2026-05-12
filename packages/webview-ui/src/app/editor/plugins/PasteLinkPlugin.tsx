@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { PASTE_COMMAND, COMMAND_PRIORITY_HIGH, $getSelection, $isRangeSelection } from 'lexical';
-import { toggleLink } from '@lexical/link';
+import { PASTE_COMMAND, COMMAND_PRIORITY_HIGH, $getSelection, $isRangeSelection, $createTextNode } from 'lexical';
+import { toggleLink, $createLinkNode } from '@lexical/link';
 
 function isUrl(text: string): boolean {
   try {
@@ -23,9 +23,17 @@ export function PasteLinkPlugin() {
         if (!isUrl(text)) return false;
 
         const selection = $getSelection();
-        if (!$isRangeSelection(selection) || selection.isCollapsed()) return false;
+        if (!$isRangeSelection(selection)) return false;
 
-        toggleLink(text);
+        if (selection.isCollapsed()) {
+          // No selected text — insert the URL as a clickable link node
+          const linkNode = $createLinkNode(text);
+          linkNode.append($createTextNode(text));
+          selection.insertNodes([linkNode]);
+        } else {
+          // Wrap selected text as a link
+          toggleLink(text);
+        }
         return true;
       },
       COMMAND_PRIORITY_HIGH
