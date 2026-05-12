@@ -32,3 +32,5 @@ coverage/
 .vscode/dev-user-data/
 
 *.local.json
+
+.vsce-pkg

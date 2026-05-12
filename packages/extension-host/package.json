@@ -7,7 +7,7 @@
     "color": "#161617",
     "theme": "dark"
   },
-  "version": "0.2.4",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -30,7 +30,7 @@
   "bugs": {
     "url": "https://github.com/bezrukavyi/markeasy/issues"
   },
-  "homepage": "https://markeasy.dev",
+  "homepage": "https://github.com/bezrukavyi/markeasy",
   "license": "MIT",
   "main": "./dist/extension.js",
   "activationEvents": [],

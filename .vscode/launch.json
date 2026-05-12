@@ -1,6 +1,6 @@
 {
   "$schema": "vscode://schemas/launch",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "configurations": [
     {
       "name": "Run Markeasy Extension",
