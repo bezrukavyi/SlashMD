@@ -5,6 +5,10 @@ import {
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
   SELECTION_CHANGE_COMMAND,
+  KEY_ARROW_LEFT_COMMAND,
+  KEY_ARROW_RIGHT_COMMAND,
+  KEY_ARROW_UP_COMMAND,
+  KEY_ARROW_DOWN_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_LOW,
   TextFormatType,
@@ -103,11 +107,17 @@ export function Toolbar() {
     }));
   }, []);
 
+  const scheduleToolbarUpdate = useCallback(() => {
+    window.setTimeout(() => {
+      editor.getEditorState().read(() => updateToolbar());
+    }, 0);
+  }, [editor, updateToolbar]);
+
   useEffect(() => {
     const unregisterSelection = editor.registerCommand(
       SELECTION_CHANGE_COMMAND,
       () => {
-        editor.getEditorState().read(() => updateToolbar());
+        scheduleToolbarUpdate();
         return false;
       },
       COMMAND_PRIORITY_CRITICAL,
@@ -116,20 +126,49 @@ export function Toolbar() {
     const unregisterFormat = editor.registerCommand(
       FORMAT_TEXT_COMMAND,
       () => {
-        setTimeout(
-          () => editor.getEditorState().read(() => updateToolbar()),
-          0,
-        );
+        scheduleToolbarUpdate();
         return false;
       },
+      COMMAND_PRIORITY_LOW,
+    );
+
+    const handleArrowSelection = (event: KeyboardEvent) => {
+      if (event.shiftKey) {
+        scheduleToolbarUpdate();
+      }
+      return false;
+    };
+
+    const unregisterArrowLeft = editor.registerCommand(
+      KEY_ARROW_LEFT_COMMAND,
+      handleArrowSelection,
+      COMMAND_PRIORITY_LOW,
+    );
+    const unregisterArrowRight = editor.registerCommand(
+      KEY_ARROW_RIGHT_COMMAND,
+      handleArrowSelection,
+      COMMAND_PRIORITY_LOW,
+    );
+    const unregisterArrowUp = editor.registerCommand(
+      KEY_ARROW_UP_COMMAND,
+      handleArrowSelection,
+      COMMAND_PRIORITY_LOW,
+    );
+    const unregisterArrowDown = editor.registerCommand(
+      KEY_ARROW_DOWN_COMMAND,
+      handleArrowSelection,
       COMMAND_PRIORITY_LOW,
     );
 
     return () => {
       unregisterSelection();
       unregisterFormat();
+      unregisterArrowLeft();
+      unregisterArrowRight();
+      unregisterArrowUp();
+      unregisterArrowDown();
     };
-  }, [editor, updateToolbar]);
+  }, [editor, scheduleToolbarUpdate]);
 
   // Intercept clicks on links inside the editor — prevent navigation, show popup instead
   useEffect(() => {
@@ -165,8 +204,9 @@ export function Toolbar() {
       const target = e.target as Node;
       const inToolbar = toolbarRef.current?.contains(target);
       const inPopup = popupRef.current?.contains(target);
+      const inEditor = editor.getRootElement()?.contains(target);
 
-      if (!inToolbar && !inPopup) {
+      if (!inToolbar && !inPopup && !inEditor) {
         dismissedByClickRef.current = true;
         setState((prev) => ({
           ...prev,
@@ -180,9 +220,23 @@ export function Toolbar() {
       }
     };
 
+    const handleSelectionChange = () => {
+      const root = editor.getRootElement();
+      const nativeSelection = window.getSelection();
+      const anchorNode = nativeSelection?.anchorNode;
+
+      if (root && anchorNode && root.contains(anchorNode)) {
+        scheduleToolbarUpdate();
+      }
+    };
+
     document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, []);
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, [editor, scheduleToolbarUpdate]);
 
   const formatText = useCallback(
     (format: TextFormatType) => {
