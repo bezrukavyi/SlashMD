@@ -80,8 +80,15 @@ export function Toolbar() {
       return;
     }
 
+    if (selection.getTextContent().trim().length === 0) {
+      setState((prev) =>
+        prev.isVisible ? { ...prev, isVisible: false } : prev,
+      );
+      return;
+    }
+
     const nativeSelection = window.getSelection();
-    if (!nativeSelection || nativeSelection.rangeCount === 0) {
+    if (!nativeSelection || nativeSelection.rangeCount === 0 || nativeSelection.isCollapsed) {
       setState((prev) =>
         prev.isVisible ? { ...prev, isVisible: false } : prev,
       );
@@ -94,6 +101,12 @@ export function Toolbar() {
 
     const range = nativeSelection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) {
+      setState((prev) =>
+        prev.isVisible ? { ...prev, isVisible: false } : prev,
+      );
+      return;
+    }
 
     setState((prev) => ({
       ...prev,
