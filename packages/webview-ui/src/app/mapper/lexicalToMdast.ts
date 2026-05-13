@@ -160,11 +160,12 @@ function convertQuoteNode(node: ElementNode): Blockquote {
 function convertListNode(node: ListNode): List {
   const listType = node.getListType();
   const ordered = listType === 'number';
+  const isCheckList = listType === 'check';
   const children: ListItem[] = [];
 
   for (const child of node.getChildren()) {
     if ($isListItemNode(child)) {
-      children.push(convertListItemNode(child, ordered));
+      children.push(convertListItemNode(child, isCheckList));
     }
   }
 
@@ -176,7 +177,7 @@ function convertListNode(node: ListNode): List {
   };
 }
 
-function convertListItemNode(node: ListItemNode, _ordered: boolean): ListItem {
+function convertListItemNode(node: ListItemNode, isCheckList: boolean): ListItem {
   const children: (Paragraph | List)[] = [];
   const inlineChildren: PhrasingContent[] = [];
 
@@ -204,7 +205,7 @@ function convertListItemNode(node: ListItemNode, _ordered: boolean): ListItem {
   return {
     type: 'listItem',
     spread: false,
-    checked: checked !== undefined ? checked : null,
+    checked: isCheckList ? checked ?? false : checked ?? null,
     children: children.length > 0 ? children : [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }],
   };
 }

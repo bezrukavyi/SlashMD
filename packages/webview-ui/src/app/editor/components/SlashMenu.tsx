@@ -149,7 +149,7 @@ const BLOCK_OPTIONS: BlockOption[] = [
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
           const list = $createListNode('check');
-          const item = $createListItemNode();
+          const item = $createListItemNode(false);
           list.append(item);
           selection.insertNodes([list]);
         }
