@@ -250,17 +250,38 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
     [assetBaseUri, documentDirUri, imagePathResolution]
   );
 
-  // Cleanup debounce timer on unmount
+  const flushPendingChange = useCallback(() => {
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    const pendingEditor = pendingEditorRef.current;
+    if (!pendingEditor) return;
+
+    const mdast = exportLexicalToMdast(pendingEditor);
+    const markdown = stringifyMarkdown(mdast);
+
+    if (markdown !== currentContentRef.current) {
+      currentContentRef.current = markdown;
+      lastInternalUpdate.current = Date.now();
+      onChange(markdown);
+    }
+  }, [onChange]);
+
   useEffect(() => {
+    window.addEventListener('pagehide', flushPendingChange);
+    window.addEventListener('beforeunload', flushPendingChange);
+
     return () => {
-      if (debounceTimerRef.current !== null) {
-        clearTimeout(debounceTimerRef.current);
-      }
+      window.removeEventListener('pagehide', flushPendingChange);
+      window.removeEventListener('beforeunload', flushPendingChange);
+      flushPendingChange();
     };
-  }, []);
+  }, [flushPendingChange]);
 
   const handleChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
+    (_editorState: EditorState, editor: LexicalEditor, tags: Set<string>) => {
       // Store the latest editor for debounced processing
       pendingEditorRef.current = editor;
 
@@ -271,22 +292,14 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
 
       // Debounce the expensive mdast conversion
       debounceTimerRef.current = window.setTimeout(() => {
-        debounceTimerRef.current = null;
-        const pendingEditor = pendingEditorRef.current;
-        if (!pendingEditor) return;
-
-        const mdast = exportLexicalToMdast(pendingEditor);
-        const markdown = stringifyMarkdown(mdast);
-
-        // Only notify if content actually changed
-        if (markdown !== currentContentRef.current) {
-          currentContentRef.current = markdown;
-          lastInternalUpdate.current = Date.now();
-          onChange(markdown);
-        }
+        flushPendingChange();
       }, DEBOUNCE_DELAY);
+
+      if (tags.has('historic')) {
+        flushPendingChange();
+      }
     },
-    [onChange]
+    [flushPendingChange]
   );
 
   const initialConfig = {
