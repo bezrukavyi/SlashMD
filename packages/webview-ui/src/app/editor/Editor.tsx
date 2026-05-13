@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useRef, useMemo } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -23,6 +23,7 @@ import { SlashMenuPlugin } from './plugins/SlashMenuPlugin';
 import { DragHandlePlugin } from './plugins/DragHandlePlugin';
 import { MarkdownShortcutsPlugin } from './plugins/MarkdownShortcutsPlugin';
 import { TableActionsPlugin } from './plugins/TableActionsPlugin';
+import { TablePasteNormalizationPlugin } from './plugins/TablePasteNormalizationPlugin';
 import { CodeBlockPlugin } from './plugins/CodeBlockPlugin';
 import { CodeFencePlugin } from './plugins/CodeFencePlugin';
 import { TogglePlugin } from './plugins/TogglePlugin';
@@ -30,6 +31,7 @@ import { ImagePlugin } from './plugins/ImagePlugin';
 import { BlockClickPlugin } from './plugins/BlockClickPlugin';
 import { SearchPlugin } from './plugins/SearchPlugin';
 import { PasteLinkPlugin } from './plugins/PasteLinkPlugin';
+import { AutoLinkPlugin } from './plugins/AutoLinkPlugin';
 import { BacktickWrapPlugin } from './plugins/BacktickWrapPlugin';
 import { AssetContext, createAssetContextValue } from './context/AssetContext';
 import {
@@ -52,6 +54,8 @@ interface EditorProps {
   assetBaseUri?: string;
   documentDirUri?: string;
   imagePathResolution?: ImagePathResolution;
+  pageWidth?: number;
+  sidePadding?: number;
 }
 
 const editorTheme = {
@@ -207,39 +211,49 @@ function simpleHash(str: string): number {
 
 function ExternalUpdatePlugin({
   content,
-  lastInternalUpdate,
+  currentContent,
 }: {
   content: string;
-  lastInternalUpdate: React.MutableRefObject<number>;
+  currentContent: React.MutableRefObject<string>;
 }) {
   const [editor] = useLexicalComposerContext();
   const lastContentHashRef = useRef<number>(0);
 
   useEffect(() => {
-    // Skip if this is our own update echoing back
-    const timeSinceUpdate = Date.now() - lastInternalUpdate.current;
-    if (timeSinceUpdate < 500) {
+    const contentHash = simpleHash(content);
+
+    if (content === currentContent.current) {
+      lastContentHashRef.current = contentHash;
       return;
     }
 
     // Skip if content hash matches (content identical)
-    const contentHash = simpleHash(content);
     if (contentHash === lastContentHashRef.current) {
       return;
     }
     lastContentHashRef.current = contentHash;
+    currentContent.current = content;
 
     const { root } = parseMarkdown(content);
     importMarkdownToLexical(editor, root);
-  }, [editor, content, lastInternalUpdate]);
+  }, [editor, content, currentContent]);
 
   return null;
 }
 
 const DEBOUNCE_DELAY = 100;
+const DEFAULT_PAGE_WIDTH = 800;
+const DEFAULT_SIDE_PADDING = 32;
 
-export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri, imagePathResolution }: EditorProps) {
-  const lastInternalUpdate = useRef<number>(0);
+export function Editor({
+  initialContent,
+  onChange,
+  assetBaseUri,
+  documentDirUri,
+  imagePathResolution,
+  pageWidth = DEFAULT_PAGE_WIDTH,
+  sidePadding = DEFAULT_SIDE_PADDING,
+}: EditorProps) {
   const currentContentRef = useRef<string>(initialContent);
   const debounceTimerRef = useRef<number | null>(null);
   const pendingEditorRef = useRef<LexicalEditor | null>(null);
@@ -249,17 +263,45 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
     [assetBaseUri, documentDirUri, imagePathResolution]
   );
 
-  // Cleanup debounce timer on unmount
+  const editorContainerStyle = useMemo(
+    () => ({
+      '--markeasy-page-width': `${pageWidth}px`,
+      '--markeasy-side-padding': `${sidePadding}px`,
+    }) as CSSProperties,
+    [pageWidth, sidePadding]
+  );
+
+  const flushPendingChange = useCallback(() => {
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    const pendingEditor = pendingEditorRef.current;
+    if (!pendingEditor) return;
+
+    const mdast = exportLexicalToMdast(pendingEditor);
+    const markdown = stringifyMarkdown(mdast);
+
+    if (markdown !== currentContentRef.current) {
+      currentContentRef.current = markdown;
+      onChange(markdown);
+    }
+  }, [onChange]);
+
   useEffect(() => {
+    window.addEventListener('pagehide', flushPendingChange);
+    window.addEventListener('beforeunload', flushPendingChange);
+
     return () => {
-      if (debounceTimerRef.current !== null) {
-        clearTimeout(debounceTimerRef.current);
-      }
+      window.removeEventListener('pagehide', flushPendingChange);
+      window.removeEventListener('beforeunload', flushPendingChange);
+      flushPendingChange();
     };
-  }, []);
+  }, [flushPendingChange]);
 
   const handleChange = useCallback(
-    (editorState: EditorState, editor: LexicalEditor) => {
+    (_editorState: EditorState, editor: LexicalEditor, tags: Set<string>) => {
       // Store the latest editor for debounced processing
       pendingEditorRef.current = editor;
 
@@ -270,22 +312,14 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
 
       // Debounce the expensive mdast conversion
       debounceTimerRef.current = window.setTimeout(() => {
-        debounceTimerRef.current = null;
-        const pendingEditor = pendingEditorRef.current;
-        if (!pendingEditor) return;
-
-        const mdast = exportLexicalToMdast(pendingEditor);
-        const markdown = stringifyMarkdown(mdast);
-
-        // Only notify if content actually changed
-        if (markdown !== currentContentRef.current) {
-          currentContentRef.current = markdown;
-          lastInternalUpdate.current = Date.now();
-          onChange(markdown);
-        }
+        flushPendingChange();
       }, DEBOUNCE_DELAY);
+
+      if (tags.has('historic')) {
+        flushPendingChange();
+      }
     },
-    [onChange]
+    [flushPendingChange]
   );
 
   const initialConfig = {
@@ -298,7 +332,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
   return (
     <AssetContext.Provider value={assetContextValue}>
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container">
+        <div className="editor-container" style={editorContainerStyle}>
           <div className="editor-inner">
             <RichTextPlugin
               contentEditable={
@@ -316,14 +350,16 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
             <CheckListPlugin />
             <TabIndentationPlugin />
             <LinkPlugin />
+            <AutoLinkPlugin />
             <TablePlugin />
+            <TablePasteNormalizationPlugin />
             <CodeHighlightPlugin />
             <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
             <InitializePlugin content={initialContent} />
             <AutoFocusPlugin />
             <ExternalUpdatePlugin
               content={initialContent}
-              lastInternalUpdate={lastInternalUpdate}
+              currentContent={currentContentRef}
             />
             <SlashMenuPlugin />
             <DragHandlePlugin />

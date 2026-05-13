@@ -163,6 +163,8 @@ export function App() {
         assetBaseUri={assetBaseUri}
         documentDirUri={documentDirUri}
         imagePathResolution={settings?.imagePathResolution ?? "document"}
+        pageWidth={settings?.pageWidth ?? 800}
+        sidePadding={settings?.sidePadding ?? 32}
       />
     </div>
   );

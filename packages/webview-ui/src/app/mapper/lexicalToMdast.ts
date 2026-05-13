@@ -1,6 +1,7 @@
 import {
   $getRoot,
   $isTextNode,
+  $isElementNode,
   $isParagraphNode,
   LexicalEditor,
   LexicalNode,
@@ -117,11 +118,19 @@ function convertLexicalNode(node: LexicalNode): Content[] {
   return [paragraph];
 }
 
-function convertParagraphNode(node: ElementNode): Paragraph {
+function convertParagraphNode(node: ElementNode): Paragraph | Html {
   const children = convertInlineChildren(node);
+
+  if (children.length === 0) {
+    return {
+      type: 'html',
+      value: '<!-- markeasy:empty-paragraph -->',
+    };
+  }
+
   return {
     type: 'paragraph',
-    children: children.length > 0 ? children : [{ type: 'text', value: '' }],
+    children,
   };
 }
 
@@ -152,11 +161,12 @@ function convertQuoteNode(node: ElementNode): Blockquote {
 function convertListNode(node: ListNode): List {
   const listType = node.getListType();
   const ordered = listType === 'number';
+  const isCheckList = listType === 'check';
   const children: ListItem[] = [];
 
   for (const child of node.getChildren()) {
     if ($isListItemNode(child)) {
-      children.push(convertListItemNode(child, ordered));
+      children.push(convertListItemNode(child, isCheckList));
     }
   }
 
@@ -168,7 +178,7 @@ function convertListNode(node: ListNode): List {
   };
 }
 
-function convertListItemNode(node: ListItemNode, _ordered: boolean): ListItem {
+function convertListItemNode(node: ListItemNode, isCheckList: boolean): ListItem {
   const children: (Paragraph | List)[] = [];
   const inlineChildren: PhrasingContent[] = [];
 
@@ -196,7 +206,7 @@ function convertListItemNode(node: ListItemNode, _ordered: boolean): ListItem {
   return {
     type: 'listItem',
     spread: false,
-    checked: checked !== undefined ? checked : null,
+    checked: isCheckList ? checked ?? false : checked ?? null,
     children: children.length > 0 ? children : [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }],
   };
 }
@@ -219,27 +229,28 @@ function convertHorizontalRuleNode(): ThematicBreak {
 
 function convertTableNode(node: TableNode): Table {
   const rows: TableRow[] = [];
-  const align: ('left' | 'right' | 'center' | null)[] = [];
+  let columnCount = 0;
 
-  let isFirstRow = true;
   for (const child of node.getChildren()) {
     if ($isTableRowNode(child)) {
       const row = convertTableRowNode(child);
+      columnCount = Math.max(columnCount, row.children.length);
       rows.push(row);
+    }
+  }
 
-      // Get alignment from first row
-      if (isFirstRow) {
-        for (const cell of child.getChildren()) {
-          align.push(null); // Default alignment
-        }
-        isFirstRow = false;
-      }
+  for (const row of rows) {
+    while (row.children.length < columnCount) {
+      row.children.push({
+        type: 'tableCell',
+        children: [{ type: 'text', value: '' }],
+      });
     }
   }
 
   return {
     type: 'table',
-    align,
+    align: Array.from({ length: columnCount }, () => null),
     children: rows,
   };
 }
@@ -264,6 +275,12 @@ function convertTableCellNode(node: TableCellNode): TableCell {
 
   for (const child of node.getChildren()) {
     if ($isParagraphNode(child)) {
+      children.push(...convertInlineChildren(child));
+    } else if ($isTextNode(child)) {
+      children.push(...convertTextNode(child));
+    } else if ($isLinkNode(child)) {
+      children.push(convertLinkNode(child as unknown as ElementNode));
+    } else if ($isElementNode(child)) {
       children.push(...convertInlineChildren(child));
     }
   }
@@ -408,6 +425,8 @@ function convertInlineChildren(node: ElementNode): PhrasingContent[] {
       children.push(...convertTextNode(child));
     } else if ($isLinkNode(child)) {
       children.push(convertLinkNode(child as unknown as ElementNode));
+    } else if ($isElementNode(child)) {
+      children.push(...convertInlineChildren(child));
     }
   }
 

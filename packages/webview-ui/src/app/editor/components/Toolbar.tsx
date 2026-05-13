@@ -1,15 +1,27 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
+  $createParagraphNode,
   $getSelection,
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
   SELECTION_CHANGE_COMMAND,
+  KEY_ARROW_LEFT_COMMAND,
+  KEY_ARROW_RIGHT_COMMAND,
+  KEY_ARROW_UP_COMMAND,
+  KEY_ARROW_DOWN_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_LOW,
-  TextFormatType,
+  type TextFormatType,
 } from "lexical";
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import {
+  INSERT_CHECK_LIST_COMMAND,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+} from "@lexical/list";
+import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
+import { $setBlocksType } from "@lexical/selection";
 import { getSelectedNode } from "../utils";
 import { openUrl } from "../../../messaging";
 
@@ -25,13 +37,15 @@ interface ToolbarState {
   linkUrl: string;
 }
 
-interface LinkPopupState {
-  visible: boolean;
-  url: string;
-  editUrl: string;
-  isEditing: boolean;
-  position: { top: number; left: number };
-}
+type BlockAction =
+  | "paragraph"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "quote"
+  | "bullet"
+  | "number"
+  | "check";
 
 const initialToolbarState: ToolbarState = {
   isVisible: false,
@@ -45,6 +59,14 @@ const initialToolbarState: ToolbarState = {
   linkUrl: "",
 };
 
+interface LinkPopupState {
+  visible: boolean;
+  url: string;
+  editUrl: string;
+  isEditing: boolean;
+  position: { top: number; left: number };
+}
+
 const initialLinkPopup: LinkPopupState = {
   visible: false,
   url: "",
@@ -52,6 +74,21 @@ const initialLinkPopup: LinkPopupState = {
   isEditing: false,
   position: { top: 0, left: 0 },
 };
+
+const BLOCK_ACTIONS: Array<{
+  action: BlockAction;
+  label: string;
+  title: string;
+}> = [
+  { action: "paragraph", label: "T", title: "Paragraph" },
+  { action: "h1", label: "H1", title: "Heading 1" },
+  { action: "h2", label: "H2", title: "Heading 2" },
+  { action: "h3", label: "H3", title: "Heading 3" },
+  { action: "quote", label: "❝", title: "Quote" },
+  { action: "bullet", label: "•", title: "Bulleted list" },
+  { action: "number", label: "1.", title: "Numbered list" },
+  { action: "check", label: "☐", title: "Checklist" },
+];
 
 export function Toolbar() {
   const [editor] = useLexicalComposerContext();
@@ -76,8 +113,15 @@ export function Toolbar() {
       return;
     }
 
+    if (selection.getTextContent().trim().length === 0) {
+      setState((prev) =>
+        prev.isVisible ? { ...prev, isVisible: false } : prev,
+      );
+      return;
+    }
+
     const nativeSelection = window.getSelection();
-    if (!nativeSelection || nativeSelection.rangeCount === 0) {
+    if (!nativeSelection || nativeSelection.rangeCount === 0 || nativeSelection.isCollapsed) {
       setState((prev) =>
         prev.isVisible ? { ...prev, isVisible: false } : prev,
       );
@@ -90,6 +134,12 @@ export function Toolbar() {
 
     const range = nativeSelection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) {
+      setState((prev) =>
+        prev.isVisible ? { ...prev, isVisible: false } : prev,
+      );
+      return;
+    }
 
     setState((prev) => ({
       ...prev,
@@ -103,11 +153,17 @@ export function Toolbar() {
     }));
   }, []);
 
+  const scheduleToolbarUpdate = useCallback(() => {
+    window.setTimeout(() => {
+      editor.getEditorState().read(() => updateToolbar());
+    }, 0);
+  }, [editor, updateToolbar]);
+
   useEffect(() => {
     const unregisterSelection = editor.registerCommand(
       SELECTION_CHANGE_COMMAND,
       () => {
-        editor.getEditorState().read(() => updateToolbar());
+        scheduleToolbarUpdate();
         return false;
       },
       COMMAND_PRIORITY_CRITICAL,
@@ -116,20 +172,49 @@ export function Toolbar() {
     const unregisterFormat = editor.registerCommand(
       FORMAT_TEXT_COMMAND,
       () => {
-        setTimeout(
-          () => editor.getEditorState().read(() => updateToolbar()),
-          0,
-        );
+        scheduleToolbarUpdate();
         return false;
       },
+      COMMAND_PRIORITY_LOW,
+    );
+
+    const handleArrowSelection = (event: KeyboardEvent) => {
+      if (event.shiftKey) {
+        scheduleToolbarUpdate();
+      }
+      return false;
+    };
+
+    const unregisterArrowLeft = editor.registerCommand(
+      KEY_ARROW_LEFT_COMMAND,
+      handleArrowSelection,
+      COMMAND_PRIORITY_LOW,
+    );
+    const unregisterArrowRight = editor.registerCommand(
+      KEY_ARROW_RIGHT_COMMAND,
+      handleArrowSelection,
+      COMMAND_PRIORITY_LOW,
+    );
+    const unregisterArrowUp = editor.registerCommand(
+      KEY_ARROW_UP_COMMAND,
+      handleArrowSelection,
+      COMMAND_PRIORITY_LOW,
+    );
+    const unregisterArrowDown = editor.registerCommand(
+      KEY_ARROW_DOWN_COMMAND,
+      handleArrowSelection,
       COMMAND_PRIORITY_LOW,
     );
 
     return () => {
       unregisterSelection();
       unregisterFormat();
+      unregisterArrowLeft();
+      unregisterArrowRight();
+      unregisterArrowUp();
+      unregisterArrowDown();
     };
-  }, [editor, updateToolbar]);
+  }, [editor, scheduleToolbarUpdate]);
 
   // Intercept clicks on links inside the editor — prevent navigation, show popup instead
   useEffect(() => {
@@ -165,24 +250,42 @@ export function Toolbar() {
       const target = e.target as Node;
       const inToolbar = toolbarRef.current?.contains(target);
       const inPopup = popupRef.current?.contains(target);
+      const inEditor = editor.getRootElement()?.contains(target);
 
-      if (!inToolbar && !inPopup) {
+      if (!inPopup) {
+        setLinkPopup(initialLinkPopup);
+      }
+
+      if (!inToolbar && !inPopup && !inEditor) {
         dismissedByClickRef.current = true;
         setState((prev) => ({
           ...prev,
           isVisible: false,
           showLinkInput: false,
         }));
-        setLinkPopup(initialLinkPopup);
         setTimeout(() => {
           dismissedByClickRef.current = false;
         }, 100);
       }
     };
 
+    const handleSelectionChange = () => {
+      const root = editor.getRootElement();
+      const nativeSelection = window.getSelection();
+      const anchorNode = nativeSelection?.anchorNode;
+
+      if (root && anchorNode && root.contains(anchorNode)) {
+        scheduleToolbarUpdate();
+      }
+    };
+
     document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, []);
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("selectionchange", handleSelectionChange);
+    };
+  }, [editor, scheduleToolbarUpdate]);
 
   const formatText = useCallback(
     (format: TextFormatType) => {
@@ -201,6 +304,41 @@ export function Toolbar() {
   const cancelLink = useCallback(() => {
     setState((prev) => ({ ...prev, showLinkInput: false, linkUrl: "" }));
   }, []);
+
+  const applyBlockAction = useCallback(
+    (action: BlockAction) => {
+      if (action === "bullet") {
+        editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+        return;
+      }
+
+      if (action === "number") {
+        editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+        return;
+      }
+
+      if (action === "check") {
+        editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+        return;
+      }
+
+      editor.update(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) {
+          return;
+        }
+
+        if (action === "paragraph") {
+          $setBlocksType(selection, () => $createParagraphNode());
+        } else if (action === "quote") {
+          $setBlocksType(selection, () => $createQuoteNode());
+        } else {
+          $setBlocksType(selection, () => $createHeadingNode(action));
+        }
+      });
+    },
+    [editor],
+  );
 
   const startEditingPopup = useCallback(() => {
     setLinkPopup((prev) => ({ ...prev, isEditing: true, editUrl: prev.url }));
@@ -231,6 +369,26 @@ export function Toolbar() {
             transform: "translateX(-50%)",
           }}
         >
+          <div className="toolbar-group" aria-label="Block type">
+            {BLOCK_ACTIONS.map((item) => (
+              <button
+                key={item.action}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  applyBlockAction(item.action);
+                }}
+                className="toolbar-button toolbar-button-text"
+                title={item.title}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="toolbar-divider" />
+
+          <div className="toolbar-group" aria-label="Text formatting">
           <button
             type="button"
             onMouseDown={(e) => {
@@ -299,6 +457,7 @@ export function Toolbar() {
               />
             </div>
           )}
+          </div>
         </div>
       )}
 
@@ -331,7 +490,7 @@ export function Toolbar() {
                     savePopupLink();
                   } else if (e.key === "Escape") {
                     e.preventDefault();
-                    setLinkPopup((prev) => ({ ...prev, isEditing: false }));
+                    setLinkPopup(initialLinkPopup);
                   }
                 }}
               />
@@ -348,7 +507,10 @@ export function Toolbar() {
               <span
                 className="link-popup-url"
                 title={linkPopup.url}
-                onClick={() => openUrl(linkPopup.url)}
+                onClick={() => {
+                  openUrl(linkPopup.url);
+                  setLinkPopup(initialLinkPopup);
+                }}
               >
                 {linkPopup.url.length > 40
                   ? linkPopup.url.slice(0, 40) + "…"

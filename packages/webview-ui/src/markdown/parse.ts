@@ -12,12 +12,71 @@ export interface ParseResult {
 }
 
 export function parseMarkdown(text: string, _options: ParseOptions = {}): ParseResult {
-  const root = fromMarkdown(text, {
+  const root = fromMarkdown(preserveEmptyParagraphs(text), {
     extensions: [gfm()],
     mdastExtensions: [gfmFromMarkdown()],
   });
 
   return { root };
+}
+
+function preserveEmptyParagraphs(text: string): string {
+  const lines = text.split('\n');
+  const result: string[] = [];
+  let blankCount = 0;
+  let fence: string | null = null;
+
+  const flushBlankLines = () => {
+    if (blankCount === 0) {
+      return;
+    }
+
+    if (fence || blankCount === 1) {
+      for (let i = 0; i < blankCount; i++) {
+        result.push('');
+      }
+    } else {
+      const emptyParagraphCount = Math.floor(blankCount / 2);
+      result.push('');
+
+      for (let i = 0; i < emptyParagraphCount; i++) {
+        result.push('<!-- markeasy:empty-paragraph -->');
+        result.push('');
+      }
+    }
+
+    blankCount = 0;
+  };
+
+  for (const line of lines) {
+    const fenceMatch = line.match(/^ {0,3}(`{3,}|~{3,})/);
+
+    if (!fence && fenceMatch) {
+      flushBlankLines();
+      fence = fenceMatch[1][0];
+      result.push(line);
+      continue;
+    }
+
+    if (fence && fenceMatch?.[1].startsWith(fence)) {
+      flushBlankLines();
+      fence = null;
+      result.push(line);
+      continue;
+    }
+
+    if (!fence && /^[ \t]*$/.test(line)) {
+      blankCount++;
+      continue;
+    }
+
+    flushBlankLines();
+    result.push(line);
+  }
+
+  flushBlankLines();
+
+  return result.join('\n');
 }
 
 // Type guards for mdast nodes

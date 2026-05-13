@@ -62,10 +62,14 @@ export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Track if we're currently applying edits from the webview
     let isApplyingEdits = false;
+    let hasSentInitialDocument = false;
+    let applyEditsQueue = Promise.resolve();
+    let lastSentContent = document.getText();
 
     // Send document content to webview
     const sendDocumentToWebview = () => {
       const text = document.getText();
+      hasSentInitialDocument = true;
       console.log('Markeasy: Sending DOC_INIT to webview, text length:', text.length);
 
       // Generate base URI for resolving relative asset paths (workspace root)
@@ -98,6 +102,34 @@ export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
       });
     };
 
+    const applyWebviewTextEdits = async (
+      edits: Array<{ start: number; end: number; newText: string }>
+    ) => {
+      if (edits.length === 0) return;
+
+      isApplyingEdits = true;
+      try {
+        const edit = new vscode.WorkspaceEdit();
+
+        for (const textEdit of edits) {
+          // Additional validation: ensure end >= start
+          if (textEdit.end < textEdit.start) {
+            console.error('Markeasy: Invalid edit range: end < start');
+            continue;
+          }
+          const startPos = document.positionAt(textEdit.start);
+          const endPos = document.positionAt(textEdit.end);
+          const range = new vscode.Range(startPos, endPos);
+          edit.replace(document.uri, range, textEdit.newText);
+        }
+
+        await vscode.workspace.applyEdit(edit);
+        lastSentContent = document.getText();
+      } finally {
+        isApplyingEdits = false;
+      }
+    };
+
     // Handle messages from webview with runtime validation
     const messageHandler = webviewPanel.webview.onDidReceiveMessage(
       async (rawMessage: unknown) => {
@@ -128,23 +160,19 @@ export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
 
           case 'APPLY_TEXT_EDITS':
             if (message.edits && message.edits.length > 0) {
-              isApplyingEdits = true;
-              const edit = new vscode.WorkspaceEdit();
-
-              for (const textEdit of message.edits) {
-                // Additional validation: ensure end >= start
-                if (textEdit.end < textEdit.start) {
-                  console.error('Markeasy: Invalid edit range: end < start');
-                  continue;
-                }
-                const startPos = document.positionAt(textEdit.start);
-                const endPos = document.positionAt(textEdit.end);
-                const range = new vscode.Range(startPos, endPos);
-                edit.replace(document.uri, range, textEdit.newText);
-              }
-
-              await vscode.workspace.applyEdit(edit);
-              isApplyingEdits = false;
+              applyEditsQueue = applyEditsQueue
+                .then(() => applyWebviewTextEdits(message.edits))
+                .catch((error) => {
+                  console.error('Markeasy: Failed to apply text edits:', error);
+                  webviewPanel.webview.postMessage({
+                    type: 'ERROR',
+                    message:
+                      error instanceof Error
+                        ? error.message
+                        : 'Failed to apply text edits',
+                  });
+                });
+              await applyEditsQueue;
             }
             break;
 
@@ -182,9 +210,6 @@ export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
         }
       }
     );
-
-    // Track last sent content to avoid duplicate sends
-    let lastSentContent = document.getText();
 
     // Handle external document changes
     const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument((e) => {
@@ -250,7 +275,9 @@ export class MarkeasyEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Send initial content after a short delay to ensure webview is ready
     setTimeout(() => {
-      sendDocumentToWebview();
+      if (!hasSentInitialDocument) {
+        sendDocumentToWebview();
+      }
     }, 100);
   }
 

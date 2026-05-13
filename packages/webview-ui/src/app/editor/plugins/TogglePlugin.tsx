@@ -8,6 +8,7 @@ import {
   KEY_ARROW_UP_COMMAND,
   $getSelection,
   $isRangeSelection,
+  type LexicalNode,
 } from 'lexical';
 import {
   $isToggleContainerNode,
@@ -15,6 +16,14 @@ import {
   $isToggleContentNode,
   ToggleContainerNode,
 } from '../nodes';
+
+function getSafeTopLevelElement(node: LexicalNode): LexicalNode | null {
+  try {
+    return node.getTopLevelElement();
+  } catch {
+    return null;
+  }
+}
 
 export function TogglePlugin(): null {
   const [editor] = useLexicalComposerContext();
@@ -163,7 +172,7 @@ export function TogglePlugin(): null {
         // Only move if we're at the very start of the first child
         if ($isToggleContainerNode(containerNode) && firstContentChild) {
           // Check if anchor is at start of first element
-          const anchorTop = anchorNode.getTopLevelElement?.() || anchorNode.getParent();
+          const anchorTop = getSafeTopLevelElement(anchorNode) || anchorNode.getParent();
           if (anchorTop === firstContentChild || anchorNode === firstContentChild) {
             // Find title node
             const children = containerNode.getChildren();

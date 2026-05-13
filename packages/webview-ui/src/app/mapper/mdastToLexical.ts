@@ -2,6 +2,7 @@ import {
   $createParagraphNode,
   $createTextNode,
   $getRoot,
+  $isElementNode,
   LexicalEditor,
   ParagraphNode,
   TextNode,
@@ -57,16 +58,27 @@ export function importMarkdownToLexical(
       if ((child as ToggleContentMarker).type === 'toggle-marker') {
         const nodes = convertToggleMarker(child as ToggleContentMarker);
         for (const node of nodes) {
-          lexicalRoot.append(node);
+          appendRootChild(lexicalRoot, node);
         }
       } else {
         const nodes = convertBlockNode(child as Content);
         for (const node of nodes) {
-          lexicalRoot.append(node);
+          appendRootChild(lexicalRoot, node);
         }
       }
     }
   });
+}
+
+function appendRootChild(root: ReturnType<typeof $getRoot>, node: LexicalNode): void {
+  if ($isElementNode(node)) {
+    root.append(node);
+    return;
+  }
+
+  const paragraph = $createParagraphNode();
+  paragraph.append(node);
+  root.append(paragraph);
 }
 
 // Type for synthetic toggle node that carries mdast content
@@ -364,11 +376,15 @@ function convertThematicBreak(): HorizontalRuleNode {
 
 function convertTable(node: Table): TableNode {
   const table = $createTableNode();
+  const columnCount = Math.max(
+    node.align?.length ?? 0,
+    ...node.children.map((row) => row.children.length),
+  );
 
   for (let i = 0; i < node.children.length; i++) {
     const row = node.children[i];
     const isHeader = i === 0;
-    const tableRow = convertTableRow(row, isHeader, node.align);
+    const tableRow = convertTableRow(row, isHeader, node.align, columnCount);
     table.append(tableRow);
   }
 
@@ -378,18 +394,29 @@ function convertTable(node: Table): TableNode {
 function convertTableRow(
   node: TableRow,
   isHeader: boolean,
-  alignments: Table['align']
+  alignments: Table['align'],
+  columnCount: number,
 ): TableRowNode {
   const row = $createTableRowNode();
 
-  for (let i = 0; i < node.children.length; i++) {
+  for (let i = 0; i < columnCount; i++) {
     const cell = node.children[i];
     const align = alignments?.[i] || null;
-    const tableCell = convertTableCell(cell, isHeader, align);
+    const tableCell = cell
+      ? convertTableCell(cell, isHeader, align)
+      : createEmptyTableCell(isHeader);
     row.append(tableCell);
   }
 
   return row;
+}
+
+function createEmptyTableCell(isHeader: boolean): TableCellNode {
+  const cell = $createTableCellNode(
+    isHeader ? TableCellHeaderStates.ROW : TableCellHeaderStates.NO_STATUS,
+  );
+  cell.append($createParagraphNode());
+  return cell;
 }
 
 function convertTableCell(
@@ -421,6 +448,10 @@ function convertHtml(node: Html): LexicalBlockNode[] {
   // Toggle/details blocks are handled by preprocessDetailsBlocks
   // This function only handles remaining HTML
 
+  if (html === '<!-- markeasy:empty-paragraph -->') {
+    return [$createParagraphNode()];
+  }
+
   // SECURITY: Sanitize HTML using DOMPurify with strict allowlist
   const sanitized = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['img', 'br', 'hr'],
@@ -441,6 +472,11 @@ function convertHtml(node: Html): LexicalBlockNode[] {
   // Parse sanitized HTML with proper DOM parser
   const parser = new DOMParser();
   const doc = parser.parseFromString(sanitized, 'text/html');
+
+  // Legacy Markeasy files serialized empty paragraph blocks as standalone <br> HTML.
+  if (doc.body.children.length === 1 && doc.body.firstElementChild?.tagName.toLowerCase() === 'br') {
+    return [$createParagraphNode()];
+  }
 
   // Check for img element
   const imgElement = doc.querySelector('img');

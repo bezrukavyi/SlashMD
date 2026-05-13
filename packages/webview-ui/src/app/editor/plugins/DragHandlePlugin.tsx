@@ -5,6 +5,7 @@ import {
   $getSelection,
   $isRangeSelection,
   $createParagraphNode,
+  type ElementNode,
 } from "lexical";
 
 interface DragHandleState {
@@ -32,6 +33,14 @@ function getBlockElement(
   }
 
   return null;
+}
+
+function getSafeTopLevelElement(node: { getTopLevelElement: () => ElementNode | null }): ElementNode | null {
+  try {
+    return node.getTopLevelElement();
+  } catch {
+    return null;
+  }
 }
 
 // Find block element based on Y position
@@ -99,7 +108,7 @@ export function DragHandlePlugin() {
 
         // Get the current anchor node and find its top-level block
         const anchorNode = selection.anchor.getNode();
-        const topLevelElement = anchorNode.getTopLevelElement();
+        const topLevelElement = getSafeTopLevelElement(anchorNode);
 
         if (!topLevelElement) {
           setDragState((prev) => ({ ...prev, isVisible: false }));

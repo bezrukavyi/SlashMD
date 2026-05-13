@@ -26,6 +26,8 @@ export interface MarkeasySettings {
   boldColor: string;
   italicColor: string;
   fontScale: number;
+  pageWidth: number;
+  sidePadding: number;
 }
 
 export type ThemeOverrides = Record<string, string>;
@@ -109,6 +111,8 @@ export function getSettings(): MarkeasySettings {
     boldColor: config.get<string>('theme.boldColor', ''),
     italicColor: config.get<string>('theme.italicColor', ''),
     fontScale: config.get<number>('theme.fontScale', 1),
+    pageWidth: config.get<number>('layout.pageWidth', 800),
+    sidePadding: config.get<number>('layout.sidePadding', 32),
   };
 }
 
