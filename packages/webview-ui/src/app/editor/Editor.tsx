@@ -30,6 +30,7 @@ import { ImagePlugin } from './plugins/ImagePlugin';
 import { BlockClickPlugin } from './plugins/BlockClickPlugin';
 import { SearchPlugin } from './plugins/SearchPlugin';
 import { PasteLinkPlugin } from './plugins/PasteLinkPlugin';
+import { AutoLinkPlugin } from './plugins/AutoLinkPlugin';
 import { BacktickWrapPlugin } from './plugins/BacktickWrapPlugin';
 import { AssetContext, createAssetContextValue } from './context/AssetContext';
 import {
@@ -316,6 +317,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
             <CheckListPlugin />
             <TabIndentationPlugin />
             <LinkPlugin />
+            <AutoLinkPlugin />
             <TablePlugin />
             <CodeHighlightPlugin />
             <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
