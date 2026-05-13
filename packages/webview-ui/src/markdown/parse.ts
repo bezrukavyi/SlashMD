@@ -40,7 +40,7 @@ function preserveEmptyParagraphs(text: string): string {
       result.push('');
 
       for (let i = 0; i < emptyParagraphCount; i++) {
-        result.push('<br>');
+        result.push('<!-- markeasy:empty-paragraph -->');
         result.push('');
       }
     }

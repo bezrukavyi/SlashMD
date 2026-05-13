@@ -421,6 +421,10 @@ function convertHtml(node: Html): LexicalBlockNode[] {
   // Toggle/details blocks are handled by preprocessDetailsBlocks
   // This function only handles remaining HTML
 
+  if (html === '<!-- markeasy:empty-paragraph -->') {
+    return [$createParagraphNode()];
+  }
+
   // SECURITY: Sanitize HTML using DOMPurify with strict allowlist
   const sanitized = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['img', 'br', 'hr'],
@@ -442,7 +446,7 @@ function convertHtml(node: Html): LexicalBlockNode[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(sanitized, 'text/html');
 
-  // Markeasy serializes empty paragraph blocks as standalone <br> HTML.
+  // Legacy Markeasy files serialized empty paragraph blocks as standalone <br> HTML.
   if (doc.body.children.length === 1 && doc.body.firstElementChild?.tagName.toLowerCase() === 'br') {
     return [$createParagraphNode()];
   }

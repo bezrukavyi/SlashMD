@@ -123,7 +123,7 @@ function convertParagraphNode(node: ElementNode): Paragraph | Html {
   if (children.length === 0) {
     return {
       type: 'html',
-      value: '<br>',
+      value: '<!-- markeasy:empty-paragraph -->',
     };
   }
 
