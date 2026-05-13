@@ -208,31 +208,32 @@ function simpleHash(str: string): number {
 
 function ExternalUpdatePlugin({
   content,
-  lastInternalUpdate,
+  currentContent,
 }: {
   content: string;
-  lastInternalUpdate: React.MutableRefObject<number>;
+  currentContent: React.MutableRefObject<string>;
 }) {
   const [editor] = useLexicalComposerContext();
   const lastContentHashRef = useRef<number>(0);
 
   useEffect(() => {
-    // Skip if this is our own update echoing back
-    const timeSinceUpdate = Date.now() - lastInternalUpdate.current;
-    if (timeSinceUpdate < 500) {
+    const contentHash = simpleHash(content);
+
+    if (content === currentContent.current) {
+      lastContentHashRef.current = contentHash;
       return;
     }
 
     // Skip if content hash matches (content identical)
-    const contentHash = simpleHash(content);
     if (contentHash === lastContentHashRef.current) {
       return;
     }
     lastContentHashRef.current = contentHash;
+    currentContent.current = content;
 
     const { root } = parseMarkdown(content);
     importMarkdownToLexical(editor, root);
-  }, [editor, content, lastInternalUpdate]);
+  }, [editor, content, currentContent]);
 
   return null;
 }
@@ -240,7 +241,6 @@ function ExternalUpdatePlugin({
 const DEBOUNCE_DELAY = 100;
 
 export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri, imagePathResolution }: EditorProps) {
-  const lastInternalUpdate = useRef<number>(0);
   const currentContentRef = useRef<string>(initialContent);
   const debounceTimerRef = useRef<number | null>(null);
   const pendingEditorRef = useRef<LexicalEditor | null>(null);
@@ -264,7 +264,6 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
 
     if (markdown !== currentContentRef.current) {
       currentContentRef.current = markdown;
-      lastInternalUpdate.current = Date.now();
       onChange(markdown);
     }
   }, [onChange]);
@@ -338,7 +337,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
             <AutoFocusPlugin />
             <ExternalUpdatePlugin
               content={initialContent}
-              lastInternalUpdate={lastInternalUpdate}
+              currentContent={currentContentRef}
             />
             <SlashMenuPlugin />
             <DragHandlePlugin />
