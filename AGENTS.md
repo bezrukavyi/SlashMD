@@ -1,10 +1,18 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to code agents when working with code in this repository.
 
 ## Project Overview
 
 Markeasy is a VS Code/Cursor extension that opens Markdown files in a Notion-style, block-based WYSIWYG custom editor by default while keeping files stored as plain Markdown.
+
+### Pre Setup
+
+Before running any node related commands the zshrc source should be enabled
+
+```javascript
+source ~/.zshrc
+```
 
 ## Build Commands
 

@@ -117,11 +117,19 @@ function convertLexicalNode(node: LexicalNode): Content[] {
   return [paragraph];
 }
 
-function convertParagraphNode(node: ElementNode): Paragraph {
+function convertParagraphNode(node: ElementNode): Paragraph | Html {
   const children = convertInlineChildren(node);
+
+  if (children.length === 0) {
+    return {
+      type: 'html',
+      value: '<br>',
+    };
+  }
+
   return {
     type: 'paragraph',
-    children: children.length > 0 ? children : [{ type: 'text', value: '' }],
+    children,
   };
 }
 

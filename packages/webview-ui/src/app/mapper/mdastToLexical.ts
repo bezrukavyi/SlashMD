@@ -442,6 +442,11 @@ function convertHtml(node: Html): LexicalBlockNode[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(sanitized, 'text/html');
 
+  // Markeasy serializes empty paragraph blocks as standalone <br> HTML.
+  if (doc.body.children.length === 1 && doc.body.firstElementChild?.tagName.toLowerCase() === 'br') {
+    return [$createParagraphNode()];
+  }
+
   // Check for img element
   const imgElement = doc.querySelector('img');
   if (imgElement) {
