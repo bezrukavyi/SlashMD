@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
+  $createParagraphNode,
   $getSelection,
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
@@ -11,9 +12,16 @@ import {
   KEY_ARROW_DOWN_COMMAND,
   COMMAND_PRIORITY_CRITICAL,
   COMMAND_PRIORITY_LOW,
-  TextFormatType,
+  type TextFormatType,
 } from "lexical";
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import {
+  INSERT_CHECK_LIST_COMMAND,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+} from "@lexical/list";
+import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
+import { $setBlocksType } from "@lexical/selection";
 import { getSelectedNode } from "../utils";
 import { openUrl } from "../../../messaging";
 
@@ -29,13 +37,15 @@ interface ToolbarState {
   linkUrl: string;
 }
 
-interface LinkPopupState {
-  visible: boolean;
-  url: string;
-  editUrl: string;
-  isEditing: boolean;
-  position: { top: number; left: number };
-}
+type BlockAction =
+  | "paragraph"
+  | "h1"
+  | "h2"
+  | "h3"
+  | "quote"
+  | "bullet"
+  | "number"
+  | "check";
 
 const initialToolbarState: ToolbarState = {
   isVisible: false,
@@ -49,6 +59,14 @@ const initialToolbarState: ToolbarState = {
   linkUrl: "",
 };
 
+interface LinkPopupState {
+  visible: boolean;
+  url: string;
+  editUrl: string;
+  isEditing: boolean;
+  position: { top: number; left: number };
+}
+
 const initialLinkPopup: LinkPopupState = {
   visible: false,
   url: "",
@@ -56,6 +74,21 @@ const initialLinkPopup: LinkPopupState = {
   isEditing: false,
   position: { top: 0, left: 0 },
 };
+
+const BLOCK_ACTIONS: Array<{
+  action: BlockAction;
+  label: string;
+  title: string;
+}> = [
+  { action: "paragraph", label: "T", title: "Paragraph" },
+  { action: "h1", label: "H1", title: "Heading 1" },
+  { action: "h2", label: "H2", title: "Heading 2" },
+  { action: "h3", label: "H3", title: "Heading 3" },
+  { action: "quote", label: "❝", title: "Quote" },
+  { action: "bullet", label: "•", title: "Bulleted list" },
+  { action: "number", label: "1.", title: "Numbered list" },
+  { action: "check", label: "☐", title: "Checklist" },
+];
 
 export function Toolbar() {
   const [editor] = useLexicalComposerContext();
@@ -219,6 +252,10 @@ export function Toolbar() {
       const inPopup = popupRef.current?.contains(target);
       const inEditor = editor.getRootElement()?.contains(target);
 
+      if (!inPopup) {
+        setLinkPopup(initialLinkPopup);
+      }
+
       if (!inToolbar && !inPopup && !inEditor) {
         dismissedByClickRef.current = true;
         setState((prev) => ({
@@ -226,7 +263,6 @@ export function Toolbar() {
           isVisible: false,
           showLinkInput: false,
         }));
-        setLinkPopup(initialLinkPopup);
         setTimeout(() => {
           dismissedByClickRef.current = false;
         }, 100);
@@ -269,6 +305,41 @@ export function Toolbar() {
     setState((prev) => ({ ...prev, showLinkInput: false, linkUrl: "" }));
   }, []);
 
+  const applyBlockAction = useCallback(
+    (action: BlockAction) => {
+      if (action === "bullet") {
+        editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+        return;
+      }
+
+      if (action === "number") {
+        editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+        return;
+      }
+
+      if (action === "check") {
+        editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined);
+        return;
+      }
+
+      editor.update(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) {
+          return;
+        }
+
+        if (action === "paragraph") {
+          $setBlocksType(selection, () => $createParagraphNode());
+        } else if (action === "quote") {
+          $setBlocksType(selection, () => $createQuoteNode());
+        } else {
+          $setBlocksType(selection, () => $createHeadingNode(action));
+        }
+      });
+    },
+    [editor],
+  );
+
   const startEditingPopup = useCallback(() => {
     setLinkPopup((prev) => ({ ...prev, isEditing: true, editUrl: prev.url }));
     setTimeout(() => popupInputRef.current?.focus(), 0);
@@ -298,6 +369,26 @@ export function Toolbar() {
             transform: "translateX(-50%)",
           }}
         >
+          <div className="toolbar-group" aria-label="Block type">
+            {BLOCK_ACTIONS.map((item) => (
+              <button
+                key={item.action}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  applyBlockAction(item.action);
+                }}
+                className="toolbar-button toolbar-button-text"
+                title={item.title}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="toolbar-divider" />
+
+          <div className="toolbar-group" aria-label="Text formatting">
           <button
             type="button"
             onMouseDown={(e) => {
@@ -366,6 +457,7 @@ export function Toolbar() {
               />
             </div>
           )}
+          </div>
         </div>
       )}
 
@@ -398,7 +490,7 @@ export function Toolbar() {
                     savePopupLink();
                   } else if (e.key === "Escape") {
                     e.preventDefault();
-                    setLinkPopup((prev) => ({ ...prev, isEditing: false }));
+                    setLinkPopup(initialLinkPopup);
                   }
                 }}
               />
@@ -415,7 +507,10 @@ export function Toolbar() {
               <span
                 className="link-popup-url"
                 title={linkPopup.url}
-                onClick={() => openUrl(linkPopup.url)}
+                onClick={() => {
+                  openUrl(linkPopup.url);
+                  setLinkPopup(initialLinkPopup);
+                }}
               >
                 {linkPopup.url.length > 40
                   ? linkPopup.url.slice(0, 40) + "…"

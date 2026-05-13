@@ -709,6 +709,12 @@ body {
   z-index: 100;
 }
 
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .toolbar-button {
   display: flex;
   align-items: center;
@@ -721,6 +727,14 @@ body {
   cursor: pointer;
   color: var(--vscode-foreground);
   font-size: 14px;
+}
+
+.toolbar-button-text {
+  width: auto;
+  min-width: 32px;
+  padding: 0 7px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 
 .toolbar-button:hover {
