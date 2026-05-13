@@ -192,8 +192,8 @@ body {
   text-decoration: line-through;
 }
 
-.editor-listitem-checked::before,
-.editor-listitem-unchecked::before {
+.editor-listitem-checked[aria-checked]::before,
+.editor-listitem-unchecked[aria-checked]::before {
   content: "";
   position: absolute;
   left: 0;
@@ -210,7 +210,7 @@ body {
   border-color: var(--vscode-link);
 }
 
-.editor-listitem-checked::after {
+.editor-listitem-checked[aria-checked]::after {
   content: "✓";
   position: absolute;
   left: 3px;
