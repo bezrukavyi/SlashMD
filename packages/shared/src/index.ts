@@ -45,6 +45,8 @@ export const MarkeasySettingsSchema = z.object({
   boldColor: z.string().max(64),
   italicColor: z.string().max(64),
   fontScale: z.number().min(0.5).max(3),
+  pageWidth: z.number().min(640).max(1600),
+  sidePadding: z.number().min(0).max(96),
 });
 
 // UI → Host message schemas

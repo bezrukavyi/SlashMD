@@ -42,6 +42,8 @@ export const MarkeasySettingsSchema = z.object({
   mermaidEnabled: z.boolean(),
   codeTheme: CodeThemeSchema,
   fontScale: z.number().min(0.5).max(3),
+  pageWidth: z.number().min(640).max(1600),
+  sidePadding: z.number().min(0).max(96),
 });
 
 // Host → UI message schemas

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useRef, useMemo } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -54,6 +54,8 @@ interface EditorProps {
   assetBaseUri?: string;
   documentDirUri?: string;
   imagePathResolution?: ImagePathResolution;
+  pageWidth?: number;
+  sidePadding?: number;
 }
 
 const editorTheme = {
@@ -240,8 +242,18 @@ function ExternalUpdatePlugin({
 }
 
 const DEBOUNCE_DELAY = 100;
+const DEFAULT_PAGE_WIDTH = 800;
+const DEFAULT_SIDE_PADDING = 32;
 
-export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri, imagePathResolution }: EditorProps) {
+export function Editor({
+  initialContent,
+  onChange,
+  assetBaseUri,
+  documentDirUri,
+  imagePathResolution,
+  pageWidth = DEFAULT_PAGE_WIDTH,
+  sidePadding = DEFAULT_SIDE_PADDING,
+}: EditorProps) {
   const currentContentRef = useRef<string>(initialContent);
   const debounceTimerRef = useRef<number | null>(null);
   const pendingEditorRef = useRef<LexicalEditor | null>(null);
@@ -249,6 +261,14 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
   const assetContextValue = useMemo(
     () => createAssetContextValue({ assetBaseUri, documentDirUri, imagePathResolution }),
     [assetBaseUri, documentDirUri, imagePathResolution]
+  );
+
+  const editorContainerStyle = useMemo(
+    () => ({
+      '--markeasy-page-width': `${pageWidth}px`,
+      '--markeasy-side-padding': `${sidePadding}px`,
+    }) as CSSProperties,
+    [pageWidth, sidePadding]
   );
 
   const flushPendingChange = useCallback(() => {
@@ -312,7 +332,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
   return (
     <AssetContext.Provider value={assetContextValue}>
       <LexicalComposer initialConfig={initialConfig}>
-        <div className="editor-container">
+        <div className="editor-container" style={editorContainerStyle}>
           <div className="editor-inner">
             <RichTextPlugin
               contentEditable={

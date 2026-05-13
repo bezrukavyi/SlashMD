@@ -254,6 +254,20 @@
           "minimum": 0.5,
           "maximum": 3,
           "description": "Font size scale multiplier relative to VS Code's editor font size (e.g., 1.2 = 20% larger, 0.9 = 10% smaller)."
+        },
+        "markeasy.layout.pageWidth": {
+          "type": "number",
+          "default": 800,
+          "minimum": 640,
+          "maximum": 1600,
+          "description": "Maximum width of the Markeasy editor page in pixels."
+        },
+        "markeasy.layout.sidePadding": {
+          "type": "number",
+          "default": 32,
+          "minimum": 0,
+          "maximum": 96,
+          "description": "Left and right padding around the Markeasy editor page in pixels."
         }
       }
     }

@@ -10,6 +10,8 @@
   );
   --vscode-font-size: var(--vscode-editor-font-size, 14px);
   --markeasy-font-scale: 1;
+  --markeasy-page-width: 800px;
+  --markeasy-side-padding: 32px;
   --vscode-foreground: var(--vscode-editor-foreground, #333);
   --vscode-background: var(--vscode-editor-background, #fff);
   --vscode-selection: var(--vscode-editor-selectionBackground, #add6ff);
@@ -101,11 +103,11 @@ body {
 /* Editor container */
 .editor-container {
   position: relative;
-  max-width: 800px;
+  max-width: var(--markeasy-page-width);
   margin: 0 auto;
   /* Ensure space for drag handle (left) and delete button (right) on narrow screens */
-  padding-left: 32px;
-  padding-right: 32px;
+  padding-left: var(--markeasy-side-padding);
+  padding-right: var(--markeasy-side-padding);
 }
 
 .editor-inner {
