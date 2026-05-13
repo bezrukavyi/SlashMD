@@ -23,6 +23,7 @@ import { SlashMenuPlugin } from './plugins/SlashMenuPlugin';
 import { DragHandlePlugin } from './plugins/DragHandlePlugin';
 import { MarkdownShortcutsPlugin } from './plugins/MarkdownShortcutsPlugin';
 import { TableActionsPlugin } from './plugins/TableActionsPlugin';
+import { TablePasteNormalizationPlugin } from './plugins/TablePasteNormalizationPlugin';
 import { CodeBlockPlugin } from './plugins/CodeBlockPlugin';
 import { CodeFencePlugin } from './plugins/CodeFencePlugin';
 import { TogglePlugin } from './plugins/TogglePlugin';
@@ -331,6 +332,7 @@ export function Editor({ initialContent, onChange, assetBaseUri, documentDirUri,
             <LinkPlugin />
             <AutoLinkPlugin />
             <TablePlugin />
+            <TablePasteNormalizationPlugin />
             <CodeHighlightPlugin />
             <OnChangePlugin onChange={handleChange} ignoreSelectionChange />
             <InitializePlugin content={initialContent} />

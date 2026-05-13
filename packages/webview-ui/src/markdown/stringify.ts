@@ -10,7 +10,7 @@ export interface StringifyOptions {
 
 export function stringifyMarkdown(root: Root, options: StringifyOptions = {}): string {
   const result = toMarkdown(root, {
-    extensions: [gfmToMarkdown()],
+    extensions: [gfmToMarkdown({ tablePipeAlign: false })],
     bullet: options.bulletStyle || '-',
     fence: options.fenceStyle || '`',
     listItemIndent: 'one',

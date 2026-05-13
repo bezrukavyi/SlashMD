@@ -1,6 +1,7 @@
 import {
   $getRoot,
   $isTextNode,
+  $isElementNode,
   $isParagraphNode,
   LexicalEditor,
   LexicalNode,
@@ -228,27 +229,28 @@ function convertHorizontalRuleNode(): ThematicBreak {
 
 function convertTableNode(node: TableNode): Table {
   const rows: TableRow[] = [];
-  const align: ('left' | 'right' | 'center' | null)[] = [];
+  let columnCount = 0;
 
-  let isFirstRow = true;
   for (const child of node.getChildren()) {
     if ($isTableRowNode(child)) {
       const row = convertTableRowNode(child);
+      columnCount = Math.max(columnCount, row.children.length);
       rows.push(row);
+    }
+  }
 
-      // Get alignment from first row
-      if (isFirstRow) {
-        for (const cell of child.getChildren()) {
-          align.push(null); // Default alignment
-        }
-        isFirstRow = false;
-      }
+  for (const row of rows) {
+    while (row.children.length < columnCount) {
+      row.children.push({
+        type: 'tableCell',
+        children: [{ type: 'text', value: '' }],
+      });
     }
   }
 
   return {
     type: 'table',
-    align,
+    align: Array.from({ length: columnCount }, () => null),
     children: rows,
   };
 }
@@ -273,6 +275,12 @@ function convertTableCellNode(node: TableCellNode): TableCell {
 
   for (const child of node.getChildren()) {
     if ($isParagraphNode(child)) {
+      children.push(...convertInlineChildren(child));
+    } else if ($isTextNode(child)) {
+      children.push(...convertTextNode(child));
+    } else if ($isLinkNode(child)) {
+      children.push(convertLinkNode(child as unknown as ElementNode));
+    } else if ($isElementNode(child)) {
       children.push(...convertInlineChildren(child));
     }
   }
@@ -417,6 +425,8 @@ function convertInlineChildren(node: ElementNode): PhrasingContent[] {
       children.push(...convertTextNode(child));
     } else if ($isLinkNode(child)) {
       children.push(convertLinkNode(child as unknown as ElementNode));
+    } else if ($isElementNode(child)) {
+      children.push(...convertInlineChildren(child));
     }
   }
 
